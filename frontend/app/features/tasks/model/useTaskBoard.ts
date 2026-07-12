@@ -12,7 +12,6 @@ export const useTaskBoard = () => {
   const showDeleteModal = ref<boolean>(false)
   const taskToDelete = ref<number | null>(null)
   const taskToEdit = ref<Task | null>(null)
-  const loadMoreTrigger = ref<HTMLElement | null>(null)
   const addErrors = ref<FieldErrors>({})
   const editErrors = ref<FieldErrors>({})
 
@@ -82,24 +81,10 @@ export const useTaskBoard = () => {
     }
   }
 
-  watchEffect((onCleanup: (cleanup: () => void) => void) => {
-    if (!loadMoreTrigger.value || tasksLoading.value || loadingMore.value || tasks.value.length === 0 || currentPage.value >= lastPage.value) {
-      return
-    }
-
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry?.isIntersecting) {
-        void loadMoreTasks()
-      }
-    }, {
-      rootMargin: '200px 0px'
-    })
-
-    observer.observe(loadMoreTrigger.value)
-
-    onCleanup(() => {
-      observer.disconnect()
-    })
+  const { trigger: loadMoreTrigger } = useInfiniteScroll({
+    canLoadMore: () => tasks.value.length > 0 && currentPage.value < lastPage.value,
+    isLoading: () => tasksLoading.value || loadingMore.value,
+    onLoadMore: loadMoreTasks
   })
 
   onMounted(() => {
