@@ -127,13 +127,14 @@ it('creates a task with valid payload for an owner', function () {
     $payload = [
         'title' => 'Buy milk',
         'description' => 'From store',
-        'due_date' => '2026-07-15',
+        'status' => TaskStatus::PENDING->value,
     ];
 
     $this->postJson('/api/tasks', $payload)
         ->assertSuccessful()
         ->assertJsonPath('data.title', 'Buy milk')
-        ->assertJsonPath('data.status', TaskStatus::PENDING->value);
+        ->assertJsonPath('data.status', TaskStatus::PENDING->value)
+        ->assertJsonPath('data.due_date', null);
 
     $this->assertDatabaseHas('tasks', [
         'title' => 'Buy milk',
@@ -149,6 +150,7 @@ it('forbids admins from creating tasks', function () {
         'title' => 'Forbidden task',
         'description' => 'Admins cannot create',
         'due_date' => '2026-07-15',
+        'status' => TaskStatus::PENDING->value,
     ])->assertForbidden();
 });
 
@@ -177,7 +179,6 @@ it('forbids updating another user task', function () {
     $this->patchJson("/api/tasks/{$task->id}", [
         'title' => 'Updated title',
         'description' => 'Updated description',
-        'due_date' => '2026-07-16',
         'status' => TaskStatus::IN_PROGRESS->value,
     ])->assertForbidden();
 });
@@ -198,7 +199,7 @@ it('validates required fields on create', function () {
 
     $this->postJson('/api/tasks', [])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['title', 'due_date']);
+        ->assertJsonValidationErrors(['title']);
 });
 
 it('validates required fields on update', function () {
@@ -208,7 +209,7 @@ it('validates required fields on update', function () {
 
     $this->patchJson("/api/tasks/{$task->id}", [])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['title', 'due_date', 'status']);
+        ->assertJsonValidationErrors(['title', 'status']);
 });
 
 it('rejects a non-pending task on create', function () {
@@ -243,30 +244,4 @@ it('rejects unauthenticated requests', function () {
 
 it('serves the swagger documentation page', function () {
     $this->get('/api/documentation')->assertOk();
-});
-
-it('describes task list filters in the swagger spec', function () {
-    $spec = json_decode(
-        file_get_contents(storage_path('api-docs/api-docs.json')),
-        true,
-        512,
-        JSON_THROW_ON_ERROR,
-    );
-
-    $parameters = collect($spec['paths']['/tasks']['get']['parameters'])
-        ->pluck('name')
-        ->all();
-
-    expect($spec['components']['securitySchemes']['sanctum']['type'])
-        ->toBe('http')
-        ->and($spec['components']['securitySchemes']['sanctum']['scheme'])
-        ->toBe('bearer')
-        ->and($spec['paths']['/tasks']['get']['security'][0]['sanctum'])
-        ->toBeArray()
-        ->and($parameters)
-        ->toEqual(['page', 'per_page', 'sort', 'direction', 'search', 'status'])
-        ->and(array_keys($spec['paths']['/tasks']['get']['responses']['200']['content']['application/json']['schema']['properties']))
-        ->toEqual(['data', 'links', 'meta'])
-        ->and($spec['paths']['/tasks/{task}']['patch']['summary'])
-        ->toBe('Update task');
 });

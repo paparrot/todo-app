@@ -14,6 +14,7 @@ final class CreateTaskRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
+            'due_date' => $this->input('due_date') ?: null,
             'status' => $this->input('status', TaskStatus::PENDING->value),
         ]);
     }
@@ -34,7 +35,7 @@ final class CreateTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
+            'title' => ['required', 'string', 'max:255', 'min:3'],
             'description' => ['nullable', 'string'],
             'due_date' => ['nullable', 'date'],
             'status' => ['required', Rule::in([TaskStatus::PENDING->value])],

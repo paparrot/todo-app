@@ -25,7 +25,7 @@ final class TaskFactory extends Factory
             'user_id' => User::factory(),
             'title' => fake()->sentence(),
             'description' => fake()->paragraph(),
-            'due_date' => fake()->date(),
+            'due_date' => fake()->optional()->date(),
             'status' => TaskStatus::PENDING,
         ];
     }

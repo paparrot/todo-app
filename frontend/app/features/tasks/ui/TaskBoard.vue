@@ -241,14 +241,14 @@ const sortDirectionLabels: Record<SortDirection, string> = {
 const addForm = ref<CreateTaskData>({
   title: '',
   description: '',
-  due_date: ''
+  due_date: null
 })
 
 const editForm = ref<UpdateTaskData>({
   id: 0,
   title: '',
   description: '',
-  due_date: '',
+  due_date: null,
   status: 'pending'
 })
 
@@ -281,7 +281,7 @@ const handleAddTask = async (): Promise<void> => {
     addForm.value = {
       title: '',
       description: '',
-      due_date: ''
+      due_date: null
     }
   } else {
     addErrors.value = result.errors || {}

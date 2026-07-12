@@ -20,7 +20,7 @@ final class ListTaskResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'due_date' => $this->due_date,
+            'due_date' => $this->due_date?->toDateString(),
             'status' => $this->status->value,
             'user_id' => $this->user_id,
         ];

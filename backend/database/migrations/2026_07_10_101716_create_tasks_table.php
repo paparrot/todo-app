@@ -16,7 +16,7 @@ return new class extends Migration
             $table->uuid('user_id');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->date('due_date');
+            $table->date('due_date')->nullable();
             $table->string('status');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

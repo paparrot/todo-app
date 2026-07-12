@@ -11,7 +11,7 @@ final class CreateTaskDTO
     public function __construct(
         public string $title,
         public ?string $description,
-        public CarbonImmutable $dueDate,
+        public ?CarbonImmutable $dueDate,
     ) {}
 
     /**
@@ -22,7 +22,9 @@ final class CreateTaskDTO
         return new self(
             title: $data['title'],
             description: $data['description'] ?? null,
-            dueDate: CarbonImmutable::parse($data['due_date']),
+            dueDate: isset($data['due_date']) && $data['due_date'] !== null
+                ? CarbonImmutable::parse($data['due_date'])
+                : null,
         );
     }
 

@@ -73,7 +73,7 @@ it('creates a task from dto', function () {
     $dto = new CreateTaskDTO(
         title: 'New task',
         description: 'Description',
-        dueDate: CarbonImmutable::parse('2026-12-31'),
+        dueDate: null,
     );
 
     $task = $service->createTask($user, $dto);
@@ -83,7 +83,9 @@ it('creates a task from dto', function () {
         ->and($task->title)
         ->toBe('New task')
         ->and($task->status)
-        ->toBe(TaskStatus::PENDING);
+        ->toBe(TaskStatus::PENDING)
+        ->and($task->due_date)
+        ->toBeNull();
 });
 
 it('updates a task', function () {
@@ -97,7 +99,7 @@ it('updates a task', function () {
         id: $task->id,
         title: 'Updated title',
         description: $task->description,
-        dueDate: CarbonImmutable::parse($task->due_date),
+        dueDate: CarbonImmutable::parse($task->due_date ?? '2026-01-01'),
         status: TaskStatus::COMPLETED,
     );
 

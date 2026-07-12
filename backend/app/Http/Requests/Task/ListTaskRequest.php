@@ -34,7 +34,7 @@ final class ListTaskRequest extends FormRequest
     {
         return [
             'per_page' => ['required', 'integer', 'min:1', 'max:100'],
-            'sort' => ['required', Rule::in(['due_date', 'status'])],
+            'sort' => ['required', Rule::in(['created_at', 'due_date', 'status'])],
             'direction' => ['required', Rule::in(['asc', 'desc'])],
             'search' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', Rule::enum(TaskStatus::class)],

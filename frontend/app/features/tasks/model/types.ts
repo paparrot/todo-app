@@ -8,7 +8,7 @@ export interface Task {
   id: number
   title: string
   description: string | null
-  due_date: string
+  due_date: string | null
   status: TaskStatus
   user_id: number
 }
@@ -16,14 +16,14 @@ export interface Task {
 export interface CreateTaskData {
   title: string
   description?: string | null
-  due_date: string
+  due_date: string | null
 }
 
 export interface UpdateTaskData {
   id: number
   title: string
   description?: string | null
-  due_date: string
+  due_date: string | null
   status: TaskStatus
 }
 
