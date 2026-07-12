@@ -17,7 +17,7 @@
       </div>
 
       <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
-        <div class="grid gap-4 lg:grid-cols-3">
+        <div class="grid gap-4 lg:grid-cols-4">
           <div class="lg:col-span-1">
             <Input
               id="search"
@@ -25,6 +25,14 @@
               placeholder="Search by title..."
               v-model="searchQuery"
             />
+          </div>
+          <div>
+            <Select id="filter-status" label="Status" v-model="statusFilter">
+              <option value="">All statuses</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </Select>
           </div>
           <div>
             <Select id="sort-by" label="Sort by" v-model="sortBy">
@@ -43,6 +51,8 @@
           </div>
         </div>
         <p class="mt-4 text-sm text-slate-500">
+          Filter: <span class="font-medium text-slate-700">{{ statusFilter ? taskStatusLabels[statusFilter] : 'All statuses' }}</span>
+          <span class="mx-1">·</span>
           Sorting by <span class="font-medium text-slate-700">{{ sortFieldLabels[sortBy] }}</span>
           <span class="mx-1">·</span>
           <span class="font-medium text-slate-700">{{ sortDirectionLabels[sortDirection] }}</span>
@@ -182,7 +192,7 @@ import type { CreateTaskData, SortDirection, Task, TaskSortField, TaskStatus, Up
 import type { FieldErrors } from '~/types/ui'
 
 const { logout } = useAuth()
-const { tasks, loading: tasksLoading, searchQuery, sortBy, sortDirection, getTasks, createTask, updateTask, deleteTask } = useTasks()
+const { tasks, loading: tasksLoading, searchQuery, statusFilter, sortBy, sortDirection, getTasks, createTask, updateTask, deleteTask } = useTasks()
 const { formatDate } = useFormatDate()
 const showAddModal = ref<boolean>(false)
 const showEditModal = ref<boolean>(false)

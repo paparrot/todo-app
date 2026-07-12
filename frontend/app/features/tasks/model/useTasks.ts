@@ -7,6 +7,7 @@ import type {
   SortDirection,
   Task,
   TaskSortField,
+  TaskStatus,
   UpdateTaskData
 } from '~/types/api'
 import type { FieldErrors } from '~/types/ui'
@@ -45,6 +46,7 @@ export const useTasks = () => {
   const loading = ref<boolean>(false)
   const errors = ref<FieldErrors>({})
   const searchQuery = ref<string>('')
+  const statusFilter = ref<TaskStatus | ''>('')
   const sortBy = ref<TaskSortField>('created_at')
   const sortDirection = ref<SortDirection>('desc')
 
@@ -56,6 +58,10 @@ export const useTasks = () => {
       const params = new URLSearchParams()
       if (searchQuery.value) {
         params.append('search', searchQuery.value)
+      }
+
+      if (statusFilter.value) {
+        params.append('status', statusFilter.value)
       }
 
       params.append('sort', sortBy.value)
@@ -74,7 +80,7 @@ export const useTasks = () => {
   }
 
   const debouncedGetTasks = debounce(getTasks, 300)
-  watch([searchQuery, sortBy, sortDirection], () => {
+  watch([searchQuery, statusFilter, sortBy, sortDirection], () => {
     debouncedGetTasks()
   })
 
@@ -142,6 +148,7 @@ export const useTasks = () => {
     loading,
     errors,
     searchQuery,
+    statusFilter,
     sortBy,
     sortDirection,
     getTasks,
