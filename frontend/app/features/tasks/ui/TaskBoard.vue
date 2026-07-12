@@ -24,40 +24,10 @@
       :sort-direction-labels="sortDirectionLabels"
     />
 
-      <div v-if="tasksLoading" class="grid gap-6">
-        <Card v-for="index in 3" :key="index">
-          <div class="animate-pulse space-y-4">
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex-1 space-y-3">
-                <div class="h-4 w-24 rounded-full bg-slate-200"></div>
-                <div class="h-6 w-3/4 rounded bg-slate-200"></div>
-                <div class="h-4 w-32 rounded bg-slate-200"></div>
-                <div class="h-4 w-full rounded bg-slate-200"></div>
-                <div class="h-4 w-2/3 rounded bg-slate-200"></div>
-              </div>
-              <div class="flex gap-2">
-                <div class="h-9 w-9 rounded-lg bg-slate-200"></div>
-                <div class="h-9 w-9 rounded-lg bg-slate-200"></div>
-              </div>
-            </div>
-            <div class="h-4 w-32 rounded bg-slate-200"></div>
-          </div>
-        </Card>
-      </div>
+      <TaskBoardSkeleton v-if="tasksLoading" />
 
       <div v-else-if="tasks.length === 0" class="mb-6">
-        <Card>
-          <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 class="text-xl font-semibold text-slate-900">No tasks yet</h2>
-              <p class="mt-2 text-sm text-slate-600">Create your first task to get started.</p>
-            </div>
-            <Button v-if="canCreateTask" @click="openAddTaskDialog">
-              <PlusIcon class="h-4 w-4" />
-              Add task
-            </Button>
-          </div>
-        </Card>
+        <TaskEmptyState :can-create-task="canCreateTask" @add-task="openAddTaskDialog" />
       </div>
 
       <div v-if="errors.general?.length" class="mb-6 rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-sm text-danger-700">
@@ -66,50 +36,18 @@
 
       <div v-if="tasks.length > 0" class="space-y-6">
         <div class="grid gap-6">
-          <Card v-for="task in tasks" :key="task.id">
-            <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-              <div class="flex-1">
-                <div :class="['inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.18em]', taskStatusClasses[task.status]]">
-                  {{ taskStatusLabels[task.status] }}
-                </div>
-                <h3 class="mt-2 text-xl font-semibold text-slate-900">{{ task.title }}</h3>
-                <p class="mt-1 text-sm text-slate-500">Created by: {{ task.user_name ?? 'Unknown user' }}</p>
-                <p v-if="task.description" class="mt-2 text-slate-600">{{ task.description }}</p>
-                <div class="mt-4 flex flex-wrap items-center gap-4">
-                  <span class="text-sm text-slate-500">Due: {{ formatDate(task.due_date) }}</span>
-                </div>
-              </div>
-              <div class="flex flex-wrap items-center gap-2">
-                <Button
-                  v-if="task.status === 'pending'"
-                  size="sm"
-                  type="button"
-                  variant="secondary"
-                  :disabled="tasksLoading || loadingMore"
-                  @click="handleSetTaskStatus(task, 'in_progress')"
-                >
-                  <PlayIcon class="h-3.5 w-3.5" />
-                  Start
-                </Button>
-                <Button
-                  v-else-if="task.status === 'in_progress'"
-                  size="sm"
-                  type="button"
-                  :disabled="tasksLoading || loadingMore"
-                  @click="handleSetTaskStatus(task, 'completed')"
-                >
-                  <CheckIcon class="h-3.5 w-3.5" />
-                  Complete
-                </Button>
-                <IconButton aria-label="Edit task" :disabled="tasksLoading || loadingMore" @click="openEditModal(task)">
-                  <PencilIcon class="h-4 w-4" />
-                </IconButton>
-                <IconButton aria-label="Delete task" variant="danger" :disabled="tasksLoading || loadingMore" @click="openDeleteModal(task)">
-                  <TrashIcon class="h-4 w-4" />
-                </IconButton>
-              </div>
-            </div>
-          </Card>
+          <TaskCard
+            v-for="task in tasks"
+            :key="task.id"
+            :task="task"
+            :disabled="tasksLoading || loadingMore"
+            :task-status-labels="taskStatusLabels"
+            :task-status-classes="taskStatusClasses"
+            :format-date="formatDate"
+            @set-status="handleTaskStatus(task, $event)"
+            @edit="openEditModal(task)"
+            @delete="openDeleteModal(task)"
+          />
         </div>
 
         <div ref="loadMoreTrigger" class="flex items-center justify-center py-6">
@@ -210,7 +148,9 @@
 </template>
 
 <script setup lang="ts">
-import { CheckIcon, PencilIcon, PlayIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import TaskBoardSkeleton from './components/TaskBoardSkeleton.vue'
+import TaskCard from './components/TaskCard.vue'
+import TaskEmptyState from './components/TaskEmptyState.vue'
 import TaskFiltersPanel from './components/TaskFiltersPanel.vue'
 import type {
   CreateTaskData,
@@ -320,6 +260,10 @@ const handleSetTaskStatus = async (task: Task, status: TaskStatus): Promise<void
     due_date: task.due_date,
     status
   })
+}
+
+const handleTaskStatus = (task: Task, status: TaskStatus): void => {
+  void handleSetTaskStatus(task, status)
 }
 
 const handleDeleteTask = async (): Promise<void> => {
