@@ -1,5 +1,6 @@
 import type { FieldErrors } from '~/types/ui'
-import type { CreateTaskData, SortDirection, Task, TaskSortField, TaskStatus, UpdateTaskData } from './types'
+import { sortDirectionLabels, sortFieldLabels, taskStatusClasses, taskStatusLabels } from './constants'
+import type { CreateTaskData, Task, TaskStatus, UpdateTaskData } from './types'
 
 export const useTaskBoard = () => {
   const { currentUser } = useAuth()
@@ -17,27 +18,7 @@ export const useTaskBoard = () => {
 
   const canCreateTask = computed(() => currentUser.value?.role === 'owner')
 
-  const taskStatusClasses: Record<TaskStatus, string> = {
-    pending: 'bg-slate-100 text-slate-700',
-    in_progress: 'bg-warning-50 text-warning-700',
-    completed: 'bg-success-50 text-success-700'
-  }
 
-  const taskStatusLabels: Record<TaskStatus, string> = {
-    pending: 'Pending',
-    in_progress: 'In Progress',
-    completed: 'Completed'
-  }
-
-  const sortFieldLabels: Record<TaskSortField, string> = {
-    due_date: 'Due date',
-    status: 'Status'
-  }
-
-  const sortDirectionLabels: Record<SortDirection, string> = {
-    asc: 'Ascending',
-    desc: 'Descending'
-  }
 
   const openEditModal = (task: Task): void => {
     taskToEdit.value = task
