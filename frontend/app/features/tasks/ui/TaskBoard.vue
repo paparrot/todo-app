@@ -75,16 +75,11 @@
       @submit="handleUpdateTask"
     />
 
-    <Dialog v-model="showDeleteModal">
-      <h2 class="mb-4 text-2xl font-semibold tracking-tight text-slate-900">Delete Task</h2>
-      <p class="mb-8 text-slate-600">Are you sure you want to delete this task? This action cannot be undone.</p>
-      <div class="flex gap-3">
-        <Button variant="secondary" class="flex-1" @click="showDeleteModal = false">Cancel</Button>
-        <Button variant="danger" class="flex-1" :disabled="tasksLoading" @click="handleDeleteTask">
-          {{ tasksLoading ? 'Deleting...' : 'Delete' }}
-        </Button>
-      </div>
-    </Dialog>
+    <TaskDeleteDialog
+      v-model="showDeleteModal"
+      :loading="tasksLoading"
+      @confirm="handleDeleteTask"
+    />
 </template>
 
 <script setup lang="ts">
@@ -92,6 +87,7 @@ import { PlusIcon } from '@heroicons/vue/24/outline'
 import TaskBoardSkeleton from './components/TaskBoardSkeleton.vue'
 import TaskCard from './components/TaskCard.vue'
 import TaskCreateDialog from './components/TaskCreateDialog.vue'
+import TaskDeleteDialog from './components/TaskDeleteDialog.vue'
 import TaskEditDialog from './components/TaskEditDialog.vue'
 import TaskEmptyState from './components/TaskEmptyState.vue'
 import TaskFiltersPanel from './components/TaskFiltersPanel.vue'
