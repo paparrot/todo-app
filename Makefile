@@ -1,4 +1,4 @@
-.PHONY: help dev up down build restart logs ps test lint migrate seed fresh artisan composer-install frontend-install frontend-dev frontend-build frontend-generate frontend-preview
+.PHONY: help dev up down build restart logs ps test lint migrate seed fresh artisan composer-install frontend-install frontend-dev frontend-build frontend-generate frontend-preview frontend-test frontend-test-watch
 
 COMPOSE ?= docker compose
 APP_SERVICE ?= backend
@@ -24,6 +24,8 @@ help:
 	@echo "  make frontend-build      Собрать production-версию frontend"
 	@echo "  make frontend-generate   Сгенерировать статический билд frontend"
 	@echo "  make frontend-preview    Запустить preview production-сборки"
+	@echo "  make frontend-test       Запустить frontend-тесты"
+	@echo "  make frontend-test-watch Запустить frontend-тесты в watch-режиме"
 
 dev:
 	$(COMPOSE) up --remove-orphans
@@ -80,3 +82,9 @@ frontend-generate:
 
 frontend-preview:
 	$(COMPOSE) run --rm frontend npm run preview
+
+frontend-test:
+	$(COMPOSE) run --rm frontend npm run test
+
+frontend-test-watch:
+	$(COMPOSE) run --rm frontend npm run test:watch

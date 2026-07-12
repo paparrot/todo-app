@@ -1,5 +1,6 @@
-import type { ActionResult, ApiErrorResponse } from '~/types/api/common'
+import type { ActionResult } from '~/types/api/common'
 import type { FieldErrors } from '~/types/ui'
+import { buildTaskQuery, createDebouncedFunction, extractTaskApiErrors } from './helpers'
 import type {
   CreateTaskData,
   SortDirection,
@@ -10,34 +11,6 @@ import type {
   TaskStatus,
   UpdateTaskData
 } from './types'
-
-function debounce<T extends (...args: unknown[]) => unknown>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null
-
-  return (...args: Parameters<T>) => {
-    if (timeout) {
-      clearTimeout(timeout)
-    }
-
-    timeout = setTimeout(() => {
-      void func(...args)
-    }, wait)
-  }
-}
-
-function extractApiErrors(error: unknown): FieldErrors {
-  if (typeof error === 'object' && error !== null && 'data' in error) {
-    const apiError = (error as { data?: ApiErrorResponse }).data
-    if (apiError?.errors) {
-      return apiError.errors
-    }
-  }
-
-  return { general: ['Something went wrong'] }
-}
 
 export const useTasks = () => {
   const { apiFetch } = useApi()
@@ -52,26 +25,6 @@ export const useTasks = () => {
   const currentPage = ref<number>(0)
   const lastPage = ref<number>(1)
   const perPage = 15
-
-  const buildQuery = (page = 1): string => {
-    const params = new URLSearchParams()
-
-    params.append('page', String(page))
-    params.append('per_page', String(perPage))
-
-    if (searchQuery.value) {
-      params.append('search', searchQuery.value)
-    }
-
-    if (statusFilter.value) {
-      params.append('status', statusFilter.value)
-    }
-
-    params.append('sort', sortBy.value)
-    params.append('direction', sortDirection.value)
-
-    return params.toString()
-  }
 
   const resetTasks = (): void => {
     tasks.value = []
@@ -89,12 +42,19 @@ export const useTasks = () => {
     }
 
     try {
-      const response = await apiFetch<TaskListResponse>(`/tasks?${buildQuery(page)}`)
+      const response = await apiFetch<TaskListResponse>(`/tasks?${buildTaskQuery({
+        page,
+        perPage,
+        search: searchQuery.value,
+        statusFilter: statusFilter.value,
+        sortBy: sortBy.value,
+        sortDirection: sortDirection.value
+      })}`)
       tasks.value = replace ? response.data : [...tasks.value, ...response.data]
       currentPage.value = response.meta.current_page
       lastPage.value = response.meta.last_page
     } catch (error: unknown) {
-      errors.value = extractApiErrors(error)
+      errors.value = extractTaskApiErrors(error)
     } finally {
       loading.value = false
       loadingMore.value = false
@@ -113,7 +73,7 @@ export const useTasks = () => {
     await fetchTasks(currentPage.value + 1)
   }
 
-  const debouncedGetTasks = debounce(getTasks, 300)
+  const debouncedGetTasks = createDebouncedFunction(getTasks, 300)
   watch([searchQuery, statusFilter, sortBy, sortDirection], () => {
     loading.value = true
     errors.value = {}
@@ -133,7 +93,7 @@ export const useTasks = () => {
       await getTasks()
       return { success: true }
     } catch (error: unknown) {
-      errors.value = extractApiErrors(error)
+      errors.value = extractTaskApiErrors(error)
       return { success: false, errors: errors.value }
     } finally {
       loading.value = false
@@ -152,14 +112,12 @@ export const useTasks = () => {
       await getTasks()
       return { success: true }
     } catch (error: unknown) {
-      errors.value = extractApiErrors(error)
+      errors.value = extractTaskApiErrors(error)
       return { success: false, errors: errors.value }
     } finally {
       loading.value = false
     }
   }
-
-
 
   const deleteTask = async (id: number): Promise<ActionResult> => {
     loading.value = true
@@ -172,7 +130,7 @@ export const useTasks = () => {
       await getTasks()
       return { success: true }
     } catch (error: unknown) {
-      errors.value = extractApiErrors(error)
+      errors.value = extractTaskApiErrors(error)
       return { success: false, errors: errors.value }
     } finally {
       loading.value = false
