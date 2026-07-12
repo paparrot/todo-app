@@ -21,6 +21,7 @@ it('seeds the default users and owner tasks', function (): void {
         ->and($owner?->role)->toBe(UserRole::OWNER)
         ->and($admin)->not->toBeNull()
         ->and($admin?->role)->toBe(UserRole::ADMIN)
+        ->and(User::query()->count())->toBe(3)
         ->and(Task::query()->where('user_id', $owner?->id)->count())->toBe(3)
         ->and(Task::query()->where('user_id', $owner?->id)->where('status', TaskStatus::PENDING->value)->count())->toBe(3);
 });
