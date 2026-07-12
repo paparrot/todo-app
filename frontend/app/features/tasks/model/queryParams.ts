@@ -1,4 +1,4 @@
-import type { LocationQuery } from 'vue-router'
+import type { LocationQuery, LocationQueryValue } from 'vue-router'
 import type { SortDirection, TaskSortField, TaskStatus } from './types'
 
 export interface TaskFiltersState {
@@ -12,16 +12,28 @@ const DEFAULT_TASK_FILTERS: TaskFiltersState = {
   searchQuery: '',
   statusFilter: '',
   sortBy: 'updated_at',
-  sortDirection: 'desc'
+  sortDirection: 'desc',
 }
 
-const VALID_SORT_FIELDS: TaskSortField[] = ['updated_at', 'created_at', 'due_date', 'status']
+const VALID_SORT_FIELDS: TaskSortField[] = [
+  'updated_at',
+  'created_at',
+  'due_date',
+  'status',
+]
 const VALID_SORT_DIRECTIONS: SortDirection[] = ['asc', 'desc']
-const VALID_STATUSES: Array<TaskStatus> = ['pending', 'in_progress', 'completed']
+const VALID_STATUSES: Array<TaskStatus> = [
+  'pending',
+  'in_progress',
+  'completed',
+]
 
-function firstQueryValue(value: LocationQuery[string]): string | undefined {
+function firstQueryValue(
+  value: LocationQueryValue | LocationQueryValue[] | undefined,
+): string | undefined {
   if (Array.isArray(value)) {
-    return value[0]
+    const firstValue = value[0]
+    return typeof firstValue === 'string' ? firstValue : undefined
   }
 
   return typeof value === 'string' ? value : undefined
@@ -39,7 +51,9 @@ function isTaskStatus(value: string): value is TaskStatus {
   return VALID_STATUSES.includes(value as TaskStatus)
 }
 
-export function getTaskFiltersFromQuery(query: LocationQuery): Partial<TaskFiltersState> {
+export function getTaskFiltersFromQuery(
+  query: LocationQuery,
+): Partial<TaskFiltersState> {
   const searchQuery = firstQueryValue(query.search)
   const statusFilter = firstQueryValue(query.status)
   const sortBy = firstQueryValue(query.sort)
@@ -65,10 +79,12 @@ export function getTaskFiltersFromQuery(query: LocationQuery): Partial<TaskFilte
   return filters
 }
 
-export function createTaskFiltersState(filters: Partial<TaskFiltersState> = {}): TaskFiltersState {
+export function createTaskFiltersState(
+  filters: Partial<TaskFiltersState> = {},
+): TaskFiltersState {
   return {
     ...DEFAULT_TASK_FILTERS,
-    ...filters
+    ...filters,
   }
 }
 
@@ -78,7 +94,7 @@ export function hasTaskFiltersQuery(query: LocationQuery): boolean {
 
 export function buildTaskFiltersQuery(
   filters: TaskFiltersState,
-  baseQuery: LocationQuery = {}
+  baseQuery: LocationQuery = {},
 ): LocationQuery {
   const nextQuery: LocationQuery = { ...baseQuery }
 
@@ -124,7 +140,10 @@ export function serializeTaskFiltersQuery(query: LocationQuery): string {
   return params.toString()
 }
 
-export function areTaskFiltersEqual(first: TaskFiltersState, second: TaskFiltersState): boolean {
+export function areTaskFiltersEqual(
+  first: TaskFiltersState,
+  second: TaskFiltersState,
+): boolean {
   return (
     first.searchQuery === second.searchQuery &&
     first.statusFilter === second.statusFilter &&

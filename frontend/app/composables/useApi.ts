@@ -16,11 +16,10 @@ export const useApi = () => {
     },
     onResponseError({ response }) {
       console.error('API Error:', response)
-    }
+    },
   })
 
   return {
-    apiFetch
+    apiFetch,
   }
 }
-

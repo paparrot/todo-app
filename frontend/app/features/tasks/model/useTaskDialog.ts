@@ -1,7 +1,10 @@
 import { useState } from '#imports'
 
 export const useTaskDialog = () => {
-  const isAddTaskDialogOpen = useState<boolean>('add-task-dialog-open', () => false)
+  const isAddTaskDialogOpen = useState<boolean>(
+    'add-task-dialog-open',
+    () => false,
+  )
 
   const openAddTaskDialog = (): void => {
     isAddTaskDialogOpen.value = true
@@ -14,6 +17,6 @@ export const useTaskDialog = () => {
   return {
     isAddTaskDialogOpen,
     openAddTaskDialog,
-    closeAddTaskDialog
+    closeAddTaskDialog,
   }
 }

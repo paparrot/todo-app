@@ -9,19 +9,46 @@ import {
   createTaskFiltersState,
   getTaskFiltersFromQuery,
   serializeTaskFiltersQuery,
-  type TaskFiltersState
+  type TaskFiltersState,
 } from './queryParams'
-import { sortDirectionLabels, sortFieldLabels, taskStatusClasses, taskStatusLabels } from './constants'
+import {
+  sortDirectionLabels,
+  sortFieldLabels,
+  taskStatusClasses,
+  taskStatusLabels,
+} from './constants'
 import type { CreateTaskData, Task, TaskStatus, UpdateTaskData } from './types'
 import type { FieldErrors } from '~/types/ui'
 
 export const useTaskBoard = () => {
   const route = useRoute()
   const router = useRouter()
-  const initialFilters = createTaskFiltersState(getTaskFiltersFromQuery(route.query))
+  const initialFilters = createTaskFiltersState(
+    getTaskFiltersFromQuery(route.query),
+  )
   const { currentUser } = useAuth()
-  const { tasks, loading: tasksLoading, loadingMore, errors, searchQuery, statusFilter, sortBy, sortDirection, currentPage, lastPage, getTasks, loadMoreTasks, createTask, updateTask, deleteTask } = useTasks(initialFilters)
-  const { isAddTaskDialogOpen: showAddModal, openAddTaskDialog, closeAddTaskDialog } = useTaskDialog()
+  const {
+    tasks,
+    loading: tasksLoading,
+    loadingMore,
+    errors,
+    searchQuery,
+    statusFilter,
+    sortBy,
+    sortDirection,
+    currentPage,
+    lastPage,
+    getTasks,
+    loadMoreTasks,
+    createTask,
+    updateTask,
+    deleteTask,
+  } = useTasks(initialFilters)
+  const {
+    isAddTaskDialogOpen: showAddModal,
+    openAddTaskDialog,
+    closeAddTaskDialog,
+  } = useTaskDialog()
   const { formatDate } = useFormatDate()
 
   const showEditModal = ref<boolean>(false)
@@ -39,11 +66,13 @@ export const useTaskBoard = () => {
     searchQuery: searchQuery.value,
     statusFilter: statusFilter.value,
     sortBy: sortBy.value,
-    sortDirection: sortDirection.value
+    sortDirection: sortDirection.value,
   })
 
   const applyRouteFilters = async (): Promise<void> => {
-    const nextFilters = createTaskFiltersState(getTaskFiltersFromQuery(route.query))
+    const nextFilters = createTaskFiltersState(
+      getTaskFiltersFromQuery(route.query),
+    )
 
     if (areTaskFiltersEqual(getCurrentFilters(), nextFilters)) {
       return
@@ -61,7 +90,10 @@ export const useTaskBoard = () => {
   const syncRouteQuery = async (): Promise<void> => {
     const nextQuery = buildTaskFiltersQuery(getCurrentFilters(), route.query)
 
-    if (serializeTaskFiltersQuery(route.query) === serializeTaskFiltersQuery(nextQuery)) {
+    if (
+      serializeTaskFiltersQuery(route.query) ===
+      serializeTaskFiltersQuery(nextQuery)
+    ) {
       return
     }
 
@@ -106,13 +138,16 @@ export const useTaskBoard = () => {
     }
   }
 
-  const handleSetTaskStatus = async (task: Task, status: TaskStatus): Promise<void> => {
+  const handleSetTaskStatus = async (
+    task: Task,
+    status: TaskStatus,
+  ): Promise<void> => {
     await updateTask({
       id: task.id,
       title: task.title,
       description: task.description,
       due_date: task.due_date,
-      status
+      status,
     })
   }
 
@@ -135,14 +170,19 @@ export const useTaskBoard = () => {
   })
 
   watch(
-    () => [route.query.search, route.query.status, route.query.sort, route.query.direction],
+    () => [
+      route.query.search,
+      route.query.status,
+      route.query.sort,
+      route.query.direction,
+    ],
     () => {
       if (isUpdatingRouteQuery.value) {
         return
       }
 
       void applyRouteFilters()
-    }
+    },
   )
 
   const handleDeleteTask = async (): Promise<void> => {
@@ -156,9 +196,10 @@ export const useTaskBoard = () => {
   }
 
   const { trigger: loadMoreTrigger } = useInfiniteScroll({
-    canLoadMore: () => tasks.value.length > 0 && currentPage.value < lastPage.value,
+    canLoadMore: () =>
+      tasks.value.length > 0 && currentPage.value < lastPage.value,
     isLoading: () => tasksLoading.value || loadingMore.value,
-    onLoadMore: loadMoreTasks
+    onLoadMore: loadMoreTasks,
   })
 
   onMounted(() => {

@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 
 vi.mock('~/features/auth/model/useAuth', () => ({
-  useAuth: () => (globalThis as typeof globalThis & { __authState?: { isAuthenticated: { value: boolean } } }).__authState
+  useAuth: () =>
+    (
+      globalThis as typeof globalThis & {
+        __authState?: { isAuthenticated: { value: boolean } }
+      }
+    ).__authState,
 }))
 
 async function importGuestMiddleware() {
@@ -13,20 +18,28 @@ async function importGuestMiddleware() {
 describe('guest middleware', () => {
   beforeEach(() => {
     vi.unstubAllGlobals()
-    ;(globalThis as typeof globalThis & { __authState?: { isAuthenticated: { value: boolean } } }).__authState = undefined
+    ;(
+      globalThis as typeof globalThis & {
+        __authState?: { isAuthenticated: { value: boolean } }
+      }
+    ).__authState = undefined
   })
 
   it('redirects authenticated users to home', async () => {
     const isAuthenticated = ref(true)
     const navigateTo = vi.fn()
 
-    ;(globalThis as typeof globalThis & { __authState?: { isAuthenticated: { value: boolean } } }).__authState = {
-      isAuthenticated
+    ;(
+      globalThis as typeof globalThis & {
+        __authState?: { isAuthenticated: { value: boolean } }
+      }
+    ).__authState = {
+      isAuthenticated,
     }
     vi.stubGlobal('navigateTo', navigateTo)
 
     const middleware = (await importGuestMiddleware()).default
-    expect(middleware()).toBeUndefined()
+    expect(middleware({} as never, {} as never)).toBeUndefined()
     expect(navigateTo).toHaveBeenCalledWith('/')
   })
 
@@ -34,13 +47,17 @@ describe('guest middleware', () => {
     const isAuthenticated = ref(false)
     const navigateTo = vi.fn()
 
-    ;(globalThis as typeof globalThis & { __authState?: { isAuthenticated: { value: boolean } } }).__authState = {
-      isAuthenticated
+    ;(
+      globalThis as typeof globalThis & {
+        __authState?: { isAuthenticated: { value: boolean } }
+      }
+    ).__authState = {
+      isAuthenticated,
     }
     vi.stubGlobal('navigateTo', navigateTo)
 
     const middleware = (await importGuestMiddleware()).default
-    expect(middleware()).toBeUndefined()
+    expect(middleware({} as never, {} as never)).toBeUndefined()
     expect(navigateTo).not.toHaveBeenCalled()
   })
 })

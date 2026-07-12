@@ -1,8 +1,8 @@
 import { ref } from 'vue'
-import { useFormatDate } from '~/composables/useFormatDate'
-import { useInfiniteScroll } from '~/composables/useInfiniteScroll'
+import { useFormatDate } from '../app/composables/useFormatDate'
+import { useInfiniteScroll } from '../app/composables/useInfiniteScroll'
 
-function getGlobalFunction<T extends (...args: any[]) => any>(name: string): T | null {
+function getGlobalFunction<T>(name: string): T | null {
   const candidate = (globalThis as Record<string, unknown>)[name]
 
   return typeof candidate === 'function' ? (candidate as T) : null
@@ -19,13 +19,14 @@ export function useRuntimeConfig() {
 
   return {
     public: {
-      apiBase: 'http://localhost:8000/api'
-    }
+      apiBase: 'http://localhost:8000/api',
+    },
   }
 }
 
 export function useCookie<T>(name: string, options?: unknown) {
-  const cookie = getGlobalFunction<(name: string, options?: unknown) => unknown>('useCookie')
+  const cookie =
+    getGlobalFunction<(name: string, options?: unknown) => unknown>('useCookie')
 
   if (cookie) {
     return cookie(name, options)
@@ -35,7 +36,8 @@ export function useCookie<T>(name: string, options?: unknown) {
 }
 
 export function useState<T>(key: string, init?: () => T) {
-  const state = getGlobalFunction<(key: string, init?: () => T) => unknown>('useState')
+  const state =
+    getGlobalFunction<(key: string, init?: () => T) => unknown>('useState')
 
   if (state) {
     return state(key, init)
@@ -55,11 +57,14 @@ export function useHead(...args: unknown[]) {
 }
 
 export function navigateTo(...args: unknown[]) {
-  const navigate = getGlobalFunction<(...args: unknown[]) => unknown>('navigateTo')
+  const navigate =
+    getGlobalFunction<(...args: unknown[]) => unknown>('navigateTo')
   return navigate ? navigate(...args) : Promise.resolve(args[0])
 }
 
-export function defineNuxtRouteMiddleware<T extends (...args: unknown[]) => unknown>(middleware: T): T {
+export function defineNuxtRouteMiddleware<
+  T extends (...args: unknown[]) => unknown,
+>(middleware: T): T {
   return middleware
 }
 

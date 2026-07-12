@@ -9,7 +9,7 @@ export const useFormatDate = () => {
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
       })
     } catch {
       return dateString
@@ -17,6 +17,6 @@ export const useFormatDate = () => {
   }
 
   return {
-    formatDate
+    formatDate,
   }
 }

@@ -1,6 +1,10 @@
 import type { ActionResult } from '~/types/api/common'
 import type { FieldErrors } from '~/types/ui'
-import { buildTaskQuery, createDebouncedFunction, extractTaskApiErrors } from './helpers'
+import {
+  buildTaskQuery,
+  createDebouncedFunction,
+  extractTaskApiErrors,
+} from './helpers'
 import type {
   CreateTaskData,
   SortDirection,
@@ -9,7 +13,7 @@ import type {
   TaskResponse,
   TaskSortField,
   TaskStatus,
-  UpdateTaskData
+  UpdateTaskData,
 } from './types'
 import type { TaskFiltersState } from './queryParams'
 
@@ -25,7 +29,9 @@ export const useTasks = (initialFilters: Partial<TaskFiltersState> = {}) => {
   const searchQuery = ref<string>(initialFilters.searchQuery ?? '')
   const statusFilter = ref<TaskStatus | ''>(initialFilters.statusFilter ?? '')
   const sortBy = ref<TaskSortField>(initialFilters.sortBy ?? 'updated_at')
-  const sortDirection = ref<SortDirection>(initialFilters.sortDirection ?? 'desc')
+  const sortDirection = ref<SortDirection>(
+    initialFilters.sortDirection ?? 'desc',
+  )
   const currentPage = ref<number>(0)
   const lastPage = ref<number>(1)
   const perPage = 15
@@ -53,7 +59,12 @@ export const useTasks = (initialFilters: Partial<TaskFiltersState> = {}) => {
   }
 
   const prependTask = (task: Task): void => {
-    tasks.value = [task, ...tasks.value.filter((existingTask: Task) => existingTask.id !== task.id)]
+    tasks.value = [
+      task,
+      ...tasks.value.filter(
+        (existingTask: Task) => existingTask.id !== task.id,
+      ),
+    ]
   }
 
   const removeTaskFromList = (id: number): void => {
@@ -81,14 +92,16 @@ export const useTasks = (initialFilters: Partial<TaskFiltersState> = {}) => {
     }
 
     try {
-      const response = await apiFetch<TaskListResponse>(`/tasks?${buildTaskQuery({
-        page,
-        perPage,
-        search: searchQuery.value,
-        statusFilter: statusFilter.value,
-        sortBy: sortBy.value,
-        sortDirection: sortDirection.value
-      })}`)
+      const response = await apiFetch<TaskListResponse>(
+        `/tasks?${buildTaskQuery({
+          page,
+          perPage,
+          search: searchQuery.value,
+          statusFilter: statusFilter.value,
+          sortBy: sortBy.value,
+          sortDirection: sortDirection.value,
+        })}`,
+      )
       if (replace) {
         tasks.value = response.data
       } else {
@@ -109,7 +122,11 @@ export const useTasks = (initialFilters: Partial<TaskFiltersState> = {}) => {
   }
 
   const loadMoreTasks = async (): Promise<void> => {
-    if (loading.value || loadingMore.value || currentPage.value >= lastPage.value) {
+    if (
+      loading.value ||
+      loadingMore.value ||
+      currentPage.value >= lastPage.value
+    ) {
       return
     }
 
@@ -131,7 +148,7 @@ export const useTasks = (initialFilters: Partial<TaskFiltersState> = {}) => {
     try {
       const response = await apiFetch<TaskResponse>('/tasks', {
         method: 'POST',
-        body: data
+        body: data,
       })
 
       if (matchesCurrentFilters(response.data)) {
@@ -154,7 +171,7 @@ export const useTasks = (initialFilters: Partial<TaskFiltersState> = {}) => {
     try {
       const response = await apiFetch<TaskResponse>(`/tasks/${data.id}`, {
         method: 'PATCH',
-        body: data
+        body: data,
       })
 
       if (!matchesCurrentFilters(response.data)) {
@@ -179,7 +196,7 @@ export const useTasks = (initialFilters: Partial<TaskFiltersState> = {}) => {
 
     try {
       await apiFetch(`/tasks/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
       removeTaskFromList(id)
@@ -207,6 +224,6 @@ export const useTasks = (initialFilters: Partial<TaskFiltersState> = {}) => {
     loadMoreTasks,
     createTask,
     updateTask,
-    deleteTask
+    deleteTask,
   }
 }

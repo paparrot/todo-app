@@ -5,7 +5,7 @@
     :class="[
       'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
       sizeClasses,
-      variantClasses
+      variantClasses,
     ]"
   >
     <slot />
@@ -29,13 +29,11 @@ const props = withDefaults(defineProps<Props>(), {
   variant: 'primary',
   size: 'md',
   type: 'button',
-  disabled: false
+  disabled: false,
 })
 
 const sizeClasses = computed(() => {
-  return props.size === 'sm'
-    ? 'px-3 py-2 text-xs'
-    : 'px-5 py-3 text-sm'
+  return props.size === 'sm' ? 'px-3 py-2 text-xs' : 'px-5 py-3 text-sm'
 })
 
 const variantClasses = computed(() => {

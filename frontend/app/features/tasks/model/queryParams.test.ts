@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { buildTaskFiltersQuery, createTaskFiltersState, getTaskFiltersFromQuery, areTaskFiltersEqual, serializeTaskFiltersQuery } from './queryParams'
+import {
+  buildTaskFiltersQuery,
+  createTaskFiltersState,
+  getTaskFiltersFromQuery,
+  areTaskFiltersEqual,
+  serializeTaskFiltersQuery,
+} from './queryParams'
 
 describe('task query params', () => {
   it('reads filters from a query string', () => {
@@ -7,14 +13,14 @@ describe('task query params', () => {
       search: 'milk',
       status: 'completed',
       sort: 'created_at',
-      direction: 'asc'
+      direction: 'asc',
     })
 
     expect(createTaskFiltersState(filters)).toEqual({
       searchQuery: 'milk',
       statusFilter: 'completed',
       sortBy: 'created_at',
-      sortDirection: 'asc'
+      sortDirection: 'asc',
     })
   })
 
@@ -24,15 +30,15 @@ describe('task query params', () => {
         search: ['milk', 'tea'],
         status: 'invalid',
         sort: 'unknown',
-        direction: 'sideways'
-      })
+        direction: 'sideways',
+      }),
     )
 
     expect(filters).toEqual({
       searchQuery: 'milk',
       statusFilter: '',
       sortBy: 'updated_at',
-      sortDirection: 'desc'
+      sortDirection: 'desc',
     })
   })
 
@@ -42,12 +48,12 @@ describe('task query params', () => {
         searchQuery: 'milk',
         statusFilter: 'pending',
         sortBy: 'updated_at',
-        sortDirection: 'desc'
+        sortDirection: 'desc',
       },
       {
         page: '2',
-        token: 'keep-me'
-      }
+        token: 'keep-me',
+      },
     )
 
     expect(query).toEqual({
@@ -56,7 +62,7 @@ describe('task query params', () => {
       search: 'milk',
       status: 'pending',
       sort: 'updated_at',
-      direction: 'desc'
+      direction: 'desc',
     })
   })
 
@@ -66,8 +72,8 @@ describe('task query params', () => {
         direction: 'desc',
         search: 'milk',
         sort: 'updated_at',
-        status: 'pending'
-      })
+        status: 'pending',
+      }),
     ).toBe('direction=desc&search=milk&sort=updated_at&status=pending')
   })
 
@@ -76,16 +82,16 @@ describe('task query params', () => {
       searchQuery: 'milk',
       statusFilter: 'completed',
       sortBy: 'created_at',
-      sortDirection: 'asc'
+      sortDirection: 'asc',
     })
     const second = createTaskFiltersState({
       searchQuery: 'milk',
       statusFilter: 'completed',
       sortBy: 'created_at',
-      sortDirection: 'asc'
+      sortDirection: 'asc',
     })
     const third = createTaskFiltersState({
-      searchQuery: 'tea'
+      searchQuery: 'tea',
     })
 
     expect(areTaskFiltersEqual(first, second)).toBe(true)

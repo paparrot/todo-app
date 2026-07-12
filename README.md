@@ -102,6 +102,9 @@ make frontend-generate    # сгенерировать статический б
 make frontend-preview     # запустить preview production-сборки
 make frontend-test        # запустить frontend-тесты
 make frontend-test-watch  # запустить frontend-тесты в watch-режиме
+make frontend-lint        # проверить frontend через ESLint
+make frontend-format      # отформатировать frontend через Prettier
+make frontend-typecheck   # проверить типы frontend через TypeScript typecheck
 ```
 
 ## Сидеры и тестовые пользователи

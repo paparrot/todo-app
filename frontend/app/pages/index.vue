@@ -7,6 +7,6 @@ import { definePageMeta } from '#imports'
 import TaskBoard from '~/features/tasks/ui/TaskBoard.vue'
 
 definePageMeta({
-  middleware: ['auth']
+  middleware: ['auth'],
 })
 </script>

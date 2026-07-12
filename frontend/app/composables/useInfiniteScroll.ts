@@ -15,13 +15,16 @@ export const useInfiniteScroll = (options: UseInfiniteScrollOptions) => {
       return
     }
 
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry?.isIntersecting) {
-        void options.onLoadMore()
-      }
-    }, {
-      rootMargin: options.rootMargin ?? '200px 0px'
-    })
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          void options.onLoadMore()
+        }
+      },
+      {
+        rootMargin: options.rootMargin ?? '200px 0px',
+      },
+    )
 
     observer.observe(trigger.value)
 
@@ -31,6 +34,6 @@ export const useInfiniteScroll = (options: UseInfiniteScrollOptions) => {
   })
 
   return {
-    trigger
+    trigger,
   }
 }

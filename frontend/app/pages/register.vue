@@ -7,6 +7,6 @@ import { definePageMeta } from '#imports'
 import RegisterForm from '~/features/auth/ui/RegisterForm.vue'
 
 definePageMeta({
-  middleware: ['guest']
+  middleware: ['guest'],
 })
 </script>

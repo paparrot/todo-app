@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
-import { buildTaskQuery, createDebouncedFunction, extractTaskApiErrors } from './helpers'
+import {
+  buildTaskQuery,
+  createDebouncedFunction,
+  extractTaskApiErrors,
+} from './helpers'
 
 describe('task helpers', () => {
   it('builds a query string with all filters', () => {
@@ -9,10 +13,12 @@ describe('task helpers', () => {
       search: 'milk',
       statusFilter: 'in_progress',
       sortBy: 'status',
-      sortDirection: 'asc'
+      sortDirection: 'asc',
     })
 
-    expect(query).toBe('page=2&per_page=15&search=milk&status=in_progress&sort=status&direction=asc')
+    expect(query).toBe(
+      'page=2&per_page=15&search=milk&status=in_progress&sort=status&direction=asc',
+    )
   })
 
   it('builds a query string without optional filters', () => {
@@ -22,7 +28,7 @@ describe('task helpers', () => {
       search: '',
       statusFilter: '',
       sortBy: 'updated_at',
-      sortDirection: 'desc'
+      sortDirection: 'desc',
     })
 
     expect(query).toBe('page=1&per_page=15&sort=updated_at&direction=desc')
@@ -32,13 +38,13 @@ describe('task helpers', () => {
     const errors = extractTaskApiErrors({
       data: {
         errors: {
-          title: ['The title field is required.']
-        }
-      }
+          title: ['The title field is required.'],
+        },
+      },
     })
 
     expect(errors).toEqual({
-      title: ['The title field is required.']
+      title: ['The title field is required.'],
     })
   })
 
@@ -46,7 +52,7 @@ describe('task helpers', () => {
     const errors = extractTaskApiErrors(new Error('boom'))
 
     expect(errors).toEqual({
-      general: ['Something went wrong']
+      general: ['Something went wrong'],
     })
   })
 

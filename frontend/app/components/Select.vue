@@ -1,12 +1,17 @@
 <template>
   <div>
-    <label v-if="label" :for="id" class="mb-2 block text-sm font-medium text-slate-700">{{ label }}</label>
+    <label
+      v-if="label"
+      :for="id"
+      class="mb-2 block text-sm font-medium text-slate-700"
+      >{{ label }}</label
+    >
     <select
       :id="id"
       :value="modelValue"
       :disabled="disabled"
-      @change="handleChange"
       class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 disabled:cursor-not-allowed disabled:bg-slate-100"
+      @change="handleChange"
     >
       <slot />
     </select>
@@ -21,10 +26,10 @@ interface SelectProps {
   disabled?: boolean
 }
 
-const props = withDefaults(defineProps<SelectProps>(), {
+withDefaults(defineProps<SelectProps>(), {
   label: '',
   modelValue: '',
-  disabled: false
+  disabled: false,
 })
 
 const emit = defineEmits<{

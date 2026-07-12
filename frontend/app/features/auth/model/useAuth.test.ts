@@ -1,11 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, ref } from 'vue'
-import type { AuthResponse, AuthUser, LoginCredentials, RegisterData } from '~/types/api'
+import type {
+  AuthResponse,
+  AuthUser,
+  LoginCredentials,
+  RegisterData,
+} from '~/types/api'
 
 vi.mock('~/composables/useApi', () => ({
   useApi: () => ({
-    apiFetch: (globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch
-  })
+    apiFetch: (
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch,
+  }),
 }))
 
 function createApiFetchMock() {
@@ -15,7 +24,7 @@ function createApiFetchMock() {
         id: '1',
         name: 'Jane Doe',
         email: 'jane@example.com',
-        role: 'owner'
+        role: 'owner',
       } satisfies AuthUser
     }
 
@@ -26,8 +35,8 @@ function createApiFetchMock() {
           id: '1',
           name: 'Jane Doe',
           email: 'jane@example.com',
-          role: 'owner'
-        }
+          role: 'owner',
+        },
       } satisfies AuthResponse
     }
 
@@ -38,8 +47,8 @@ function createApiFetchMock() {
           id: '2',
           name: 'John Smith',
           email: 'john@example.com',
-          role: 'admin'
-        }
+          role: 'admin',
+        },
       } satisfies AuthResponse
     }
 
@@ -59,7 +68,11 @@ async function importUseAuth() {
 describe('useAuth', () => {
   beforeEach(() => {
     vi.unstubAllGlobals()
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = undefined
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = undefined
   })
 
   it('logs in and stores token and user', async () => {
@@ -68,7 +81,11 @@ describe('useAuth', () => {
     const currentUser = ref<AuthUser | null>(null)
     const navigateTo = vi.fn()
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
     vi.stubGlobal('useCookie', () => token)
     vi.stubGlobal('useState', () => currentUser)
     vi.stubGlobal('navigateTo', navigateTo)
@@ -78,20 +95,20 @@ describe('useAuth', () => {
 
     const credentials: LoginCredentials = {
       email: 'jane@example.com',
-      password: 'secret'
+      password: 'secret',
     }
 
     await expect(login(credentials)).resolves.toEqual({ success: true })
     expect(apiFetch).toHaveBeenCalledWith('/login', {
       method: 'POST',
-      body: credentials
+      body: credentials,
     })
     expect(token.value).toBe('token-123')
     expect(currentUser.value).toEqual({
       id: '1',
       name: 'Jane Doe',
       email: 'jane@example.com',
-      role: 'owner'
+      role: 'owner',
     })
     expect(navigateTo).not.toHaveBeenCalled()
   })
@@ -101,15 +118,19 @@ describe('useAuth', () => {
       throw {
         data: {
           errors: {
-            email: ['The email field is required.']
-          }
-        }
+            email: ['The email field is required.'],
+          },
+        },
       }
     })
     const token = ref<string | null>(null)
     const currentUser = ref<AuthUser | null>(null)
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
     vi.stubGlobal('useCookie', () => token)
     vi.stubGlobal('useState', () => currentUser)
     vi.stubGlobal('navigateTo', vi.fn())
@@ -120,8 +141,8 @@ describe('useAuth', () => {
     await expect(login({ email: '', password: '' })).resolves.toEqual({
       success: false,
       errors: {
-        email: ['The email field is required.']
-      }
+        email: ['The email field is required.'],
+      },
     })
     expect(token.value).toBeNull()
     expect(currentUser.value).toBeNull()
@@ -130,14 +151,18 @@ describe('useAuth', () => {
   it('fetches the current user and redirects on unauthorized errors', async () => {
     const apiFetch = vi.fn(async () => {
       throw {
-        statusCode: 401
+        statusCode: 401,
       }
     })
     const token = ref<string | null>('token-123')
     const currentUser = ref<AuthUser | null>(null)
     const navigateTo = vi.fn(async () => undefined)
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
     vi.stubGlobal('useCookie', () => token)
     vi.stubGlobal('useState', () => currentUser)
     vi.stubGlobal('navigateTo', navigateTo)
@@ -156,7 +181,11 @@ describe('useAuth', () => {
     const token = ref<string | null>(null)
     const currentUser = ref<AuthUser | null>(null)
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
     vi.stubGlobal('useCookie', () => token)
     vi.stubGlobal('useState', () => currentUser)
     vi.stubGlobal('navigateTo', vi.fn())
@@ -167,7 +196,7 @@ describe('useAuth', () => {
     const payload: RegisterData = {
       name: 'John Smith',
       email: 'john@example.com',
-      password: 'secret'
+      password: 'secret',
     }
 
     await expect(register(payload)).resolves.toEqual({ success: true })
@@ -176,7 +205,7 @@ describe('useAuth', () => {
       id: '2',
       name: 'John Smith',
       email: 'john@example.com',
-      role: 'admin'
+      role: 'admin',
     })
   })
 
@@ -187,11 +216,15 @@ describe('useAuth', () => {
       id: '1',
       name: 'Jane Doe',
       email: 'jane@example.com',
-      role: 'owner'
+      role: 'owner',
     })
     const navigateTo = vi.fn(async () => undefined)
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
     vi.stubGlobal('useCookie', () => token)
     vi.stubGlobal('useState', () => currentUser)
     vi.stubGlobal('navigateTo', navigateTo)
@@ -210,7 +243,11 @@ describe('useAuth', () => {
     const token = ref<string | null>('token-123')
     const currentUser = ref<AuthUser | null>(null)
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = vi.fn()
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = vi.fn()
     vi.stubGlobal('useCookie', () => token)
     vi.stubGlobal('useState', () => currentUser)
     vi.stubGlobal('navigateTo', vi.fn())

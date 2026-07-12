@@ -1,21 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { nextTick, ref } from 'vue'
+import { nextTick } from 'vue'
 import type { Task, TaskListResponse } from './types'
 
 vi.mock('~/composables/useApi', () => ({
   useApi: () => ({
-    apiFetch: (globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch
-  })
+    apiFetch: (
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch,
+  }),
 }))
 
-function createTaskListResponse(tasks: Task[], currentPage = 1, lastPage = 1): TaskListResponse {
+function createTaskListResponse(
+  tasks: Task[],
+  currentPage = 1,
+  lastPage = 1,
+): TaskListResponse {
   return {
     data: tasks,
     links: {
       first: null,
       last: null,
       prev: null,
-      next: null
+      next: null,
     },
     meta: {
       current_page: currentPage,
@@ -24,8 +32,8 @@ function createTaskListResponse(tasks: Task[], currentPage = 1, lastPage = 1): T
       path: 'http://localhost:8000/api/tasks',
       per_page: 15,
       to: tasks.length > 0 ? tasks.length : null,
-      total: tasks.length
-    }
+      total: tasks.length,
+    },
   }
 }
 
@@ -40,7 +48,7 @@ function makeTask(id: number, overrides: Partial<Task> = {}): Task {
     user_name: 'Jane Doe',
     created_at: `2026-07-12T10:00:${String(id).padStart(2, '0')}.000000Z`,
     updated_at: `2026-07-12T10:00:${String(id).padStart(2, '0')}.000000Z`,
-    ...overrides
+    ...overrides,
   }
 }
 
@@ -53,19 +61,30 @@ describe('useTasks', () => {
   beforeEach(() => {
     vi.useRealTimers()
     vi.unstubAllGlobals()
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = undefined
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = undefined
   })
 
   it('loads tasks with the current filters', async () => {
     const apiFetch = vi.fn(async (url: string) => {
-      expect(url).toBe('/tasks?page=1&per_page=15&sort=updated_at&direction=desc')
+      expect(url).toBe(
+        '/tasks?page=1&per_page=15&sort=updated_at&direction=desc',
+      )
       return createTaskListResponse([makeTask(1)], 1, 1)
     })
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
-    const { tasks, getTasks, loading, loadingMore, currentPage, lastPage } = useTasks()
+    const { tasks, getTasks, loading, loadingMore, currentPage, lastPage } =
+      useTasks()
 
     expect(loading.value).toBe(true)
     await getTasks()
@@ -80,9 +99,15 @@ describe('useTasks', () => {
 
   it('reloads tasks when filters change', async () => {
     vi.useFakeTimers()
-    const apiFetch = vi.fn(async () => createTaskListResponse([makeTask(1)], 1, 1))
+    const apiFetch = vi.fn(async () =>
+      createTaskListResponse([makeTask(1)], 1, 1),
+    )
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { searchQuery, tasks } = useTasks()
@@ -92,7 +117,9 @@ describe('useTasks', () => {
     expect(tasks.value).toEqual([])
 
     await vi.advanceTimersByTimeAsync(300)
-    expect(apiFetch).toHaveBeenCalledWith('/tasks?page=1&per_page=15&search=milk&sort=updated_at&direction=desc')
+    expect(apiFetch).toHaveBeenCalledWith(
+      '/tasks?page=1&per_page=15&search=milk&sort=updated_at&direction=desc',
+    )
     expect(tasks.value).toHaveLength(1)
     vi.useRealTimers()
   })
@@ -112,7 +139,11 @@ describe('useTasks', () => {
       throw new Error(`Unexpected url: ${url}`)
     })
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { getTasks, loadMoreTasks, tasks, currentPage, lastPage } = useTasks()
@@ -122,7 +153,9 @@ describe('useTasks', () => {
     expect(lastPage.value).toBe(2)
 
     await loadMoreTasks()
-    expect(apiFetch).toHaveBeenCalledWith('/tasks?page=2&per_page=15&sort=updated_at&direction=desc')
+    expect(apiFetch).toHaveBeenCalledWith(
+      '/tasks?page=2&per_page=15&sort=updated_at&direction=desc',
+    )
     expect(tasks.value).toHaveLength(2)
     expect(currentPage.value).toBe(2)
   })
@@ -142,7 +175,11 @@ describe('useTasks', () => {
       throw new Error(`Unexpected url: ${url}`)
     })
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { getTasks, loadMoreTasks, tasks } = useTasks()
@@ -154,9 +191,15 @@ describe('useTasks', () => {
   })
 
   it('does not load more when already loading or at the last page', async () => {
-    const apiFetch = vi.fn(async () => createTaskListResponse([makeTask(1)], 1, 1))
+    const apiFetch = vi.fn(async () =>
+      createTaskListResponse([makeTask(1)], 1, 1),
+    )
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { getTasks, loadMoreTasks, loading, loadingMore } = useTasks()
@@ -175,22 +218,35 @@ describe('useTasks', () => {
   })
 
   it('creates a task in the current order', async () => {
-    const apiFetch = vi.fn(async (url: string, options?: { method?: string }) => {
-      if (url === '/tasks?page=1&per_page=15&sort=updated_at&direction=desc') {
-        return createTaskListResponse([makeTask(1)], 1, 1)
+    const apiFetch = vi.fn(
+      async (url: string, options?: { method?: string }) => {
+        if (
+          url === '/tasks?page=1&per_page=15&sort=updated_at&direction=desc'
+        ) {
+          return createTaskListResponse([makeTask(1)], 1, 1)
+        }
+
+        if (url === '/tasks' && options?.method === 'POST') {
+          return { data: makeTask(10) }
+        }
+
+        throw new Error(`Unexpected url: ${url}`)
+      },
+    )
+
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
       }
-
-      if (url === '/tasks' && options?.method === 'POST') {
-        return { data: makeTask(10) }
-      }
-
-      throw new Error(`Unexpected url: ${url}`)
-    })
-
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
-    const { getTasks, createTask: createTaskAction, tasks, loading } = useTasks()
+    const {
+      getTasks,
+      createTask: createTaskAction,
+      tasks,
+      loading,
+    } = useTasks()
 
     await getTasks()
     apiFetch.mockClear()
@@ -198,7 +254,7 @@ describe('useTasks', () => {
     const result = await createTaskAction({
       title: 'New task',
       description: 'A created task',
-      due_date: '2026-07-12'
+      due_date: '2026-07-12',
     })
 
     expect(result).toEqual({ success: true })
@@ -210,28 +266,46 @@ describe('useTasks', () => {
       body: {
         title: 'New task',
         description: 'A created task',
-        due_date: '2026-07-12'
-      }
+        due_date: '2026-07-12',
+      },
     })
   })
 
   it('does not add created tasks that do not match current filters', async () => {
-    const apiFetch = vi.fn(async (url: string, options?: { method?: string }) => {
-      if (url === '/tasks?page=1&per_page=15&status=completed&sort=updated_at&direction=desc') {
-        return createTaskListResponse([makeTask(1, { status: 'completed' })], 1, 1)
+    const apiFetch = vi.fn(
+      async (url: string, options?: { method?: string }) => {
+        if (
+          url ===
+          '/tasks?page=1&per_page=15&status=completed&sort=updated_at&direction=desc'
+        ) {
+          return createTaskListResponse(
+            [makeTask(1, { status: 'completed' })],
+            1,
+            1,
+          )
+        }
+
+        if (url === '/tasks' && options?.method === 'POST') {
+          return { data: makeTask(10, { status: 'pending' }) }
+        }
+
+        throw new Error(`Unexpected url: ${url}`)
+      },
+    )
+
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
       }
-
-      if (url === '/tasks' && options?.method === 'POST') {
-        return { data: makeTask(10, { status: 'pending' }) }
-      }
-
-      throw new Error(`Unexpected url: ${url}`)
-    })
-
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
-    const { getTasks, createTask: createTaskAction, tasks, statusFilter } = useTasks()
+    const {
+      getTasks,
+      createTask: createTaskAction,
+      tasks,
+      statusFilter,
+    } = useTasks()
 
     statusFilter.value = 'completed'
 
@@ -241,7 +315,7 @@ describe('useTasks', () => {
     const result = await createTaskAction({
       title: 'Hidden task',
       description: 'Does not match the current filter',
-      due_date: '2026-07-12'
+      due_date: '2026-07-12',
     })
 
     expect(result).toEqual({ success: true })
@@ -250,19 +324,32 @@ describe('useTasks', () => {
   })
 
   it('removes updated tasks that no longer match current filters', async () => {
-    const apiFetch = vi.fn(async (url: string, options?: { method?: string }) => {
-      if (url === '/tasks?page=1&per_page=15&status=pending&sort=updated_at&direction=desc') {
-        return createTaskListResponse([makeTask(1, { status: 'pending' })], 1, 1)
+    const apiFetch = vi.fn(
+      async (url: string, options?: { method?: string }) => {
+        if (
+          url ===
+          '/tasks?page=1&per_page=15&status=pending&sort=updated_at&direction=desc'
+        ) {
+          return createTaskListResponse(
+            [makeTask(1, { status: 'pending' })],
+            1,
+            1,
+          )
+        }
+
+        if (url === '/tasks/1' && options?.method === 'PATCH') {
+          return { data: makeTask(1, { status: 'completed' }) }
+        }
+
+        throw new Error(`Unexpected url: ${url}`)
+      },
+    )
+
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
       }
-
-      if (url === '/tasks/1' && options?.method === 'PATCH') {
-        return { data: makeTask(1, { status: 'completed' }) }
-      }
-
-      throw new Error(`Unexpected url: ${url}`)
-    })
-
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { getTasks, updateTask, tasks, statusFilter } = useTasks()
@@ -277,7 +364,7 @@ describe('useTasks', () => {
       title: 'Task 1',
       description: 'Description 1',
       due_date: '2026-07-12',
-      status: 'completed'
+      status: 'completed',
     })
 
     expect(result).toEqual({ success: true })
@@ -290,8 +377,8 @@ describe('useTasks', () => {
         title: 'Task 1',
         description: 'Description 1',
         due_date: '2026-07-12',
-        status: 'completed'
-      }
+        status: 'completed',
+      },
     })
   })
 
@@ -300,13 +387,17 @@ describe('useTasks', () => {
       throw {
         data: {
           errors: {
-            title: ['The title field is required.']
-          }
-        }
+            title: ['The title field is required.'],
+          },
+        },
       }
     })
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { createTask: createTaskAction, errors, loading } = useTasks()
@@ -314,39 +405,47 @@ describe('useTasks', () => {
     const result = await createTaskAction({
       title: '',
       description: null,
-      due_date: null
+      due_date: null,
     })
 
     expect(result).toEqual({
       success: false,
       errors: {
-        title: ['The title field is required.']
-      }
+        title: ['The title field is required.'],
+      },
     })
     expect(errors.value).toEqual({
-      title: ['The title field is required.']
+      title: ['The title field is required.'],
     })
     expect(loading.value).toBe(false)
   })
 
   it('updates tasks in place and deletes tasks', async () => {
-    const apiFetch = vi.fn(async (url: string, options?: { method?: string }) => {
-      if (url === '/tasks?page=1&per_page=15&sort=updated_at&direction=desc') {
-        return createTaskListResponse([makeTask(1)], 1, 1)
+    const apiFetch = vi.fn(
+      async (url: string, options?: { method?: string }) => {
+        if (
+          url === '/tasks?page=1&per_page=15&sort=updated_at&direction=desc'
+        ) {
+          return createTaskListResponse([makeTask(1)], 1, 1)
+        }
+
+        if (url === '/tasks/1' && options?.method === 'PATCH') {
+          return { data: makeTask(1, { status: 'completed' }) }
+        }
+
+        if (url === '/tasks/1' && options?.method === 'DELETE') {
+          return null
+        }
+
+        throw new Error(`Unexpected url: ${url}`)
+      },
+    )
+
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
       }
-
-      if (url === '/tasks/1' && options?.method === 'PATCH') {
-        return { data: makeTask(1, { status: 'completed' }) }
-      }
-
-      if (url === '/tasks/1' && options?.method === 'DELETE') {
-        return null
-      }
-
-      throw new Error(`Unexpected url: ${url}`)
-    })
-
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { getTasks, updateTask, deleteTask, tasks } = useTasks()
@@ -359,7 +458,7 @@ describe('useTasks', () => {
       title: 'Task 1',
       description: 'Description 1',
       due_date: '2026-07-12',
-      status: 'completed'
+      status: 'completed',
     })
 
     expect(updateResult).toEqual({ success: true })
@@ -373,8 +472,8 @@ describe('useTasks', () => {
         title: 'Task 1',
         description: 'Description 1',
         due_date: '2026-07-12',
-        status: 'completed'
-      }
+        status: 'completed',
+      },
     })
 
     apiFetch.mockClear()
@@ -391,13 +490,17 @@ describe('useTasks', () => {
       throw {
         data: {
           errors: {
-            status: ['The selected status is invalid.']
-          }
-        }
+            status: ['The selected status is invalid.'],
+          },
+        },
       }
     })
 
-    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
+    ;(
+      globalThis as typeof globalThis & {
+        __apiFetch?: ReturnType<typeof vi.fn>
+      }
+    ).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { updateTask, errors } = useTasks()
@@ -407,17 +510,17 @@ describe('useTasks', () => {
       title: 'Task 1',
       description: null,
       due_date: null,
-      status: 'pending'
+      status: 'pending',
     })
 
     expect(result).toEqual({
       success: false,
       errors: {
-        status: ['The selected status is invalid.']
-      }
+        status: ['The selected status is invalid.'],
+      },
     })
     expect(errors.value).toEqual({
-      status: ['The selected status is invalid.']
+      status: ['The selected status is invalid.'],
     })
   })
 })

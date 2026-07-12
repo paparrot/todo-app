@@ -1,4 +1,4 @@
-.PHONY: help dev up down build restart logs ps test lint migrate seed fresh artisan composer-install frontend-install frontend-dev frontend-build frontend-generate frontend-preview frontend-test frontend-test-watch
+.PHONY: help dev up down build restart logs ps test lint migrate seed fresh artisan composer-install frontend-install frontend-dev frontend-build frontend-generate frontend-preview frontend-test frontend-test-watch frontend-lint frontend-format frontend-typecheck
 
 COMPOSE ?= docker compose
 APP_SERVICE ?= backend
@@ -26,6 +26,9 @@ help:
 	@echo "  make frontend-preview    Запустить preview production-сборки"
 	@echo "  make frontend-test       Запустить frontend-тесты"
 	@echo "  make frontend-test-watch Запустить frontend-тесты в watch-режиме"
+	@echo "  make frontend-lint       Проверить frontend через ESLint"
+	@echo "  make frontend-format     Отформатировать frontend через Prettier"
+	@echo "  make frontend-typecheck  Проверить типы frontend через TypeScript typecheck"
 
 dev:
 	$(COMPOSE) up --remove-orphans
@@ -88,3 +91,12 @@ frontend-test:
 
 frontend-test-watch:
 	$(COMPOSE) exec -T frontend npm run test:watch
+
+frontend-lint:
+	$(COMPOSE) exec -T frontend npm run lint
+
+frontend-format:
+	$(COMPOSE) exec -T frontend npm run format
+
+frontend-typecheck:
+	$(COMPOSE) exec -T frontend npm run typecheck
