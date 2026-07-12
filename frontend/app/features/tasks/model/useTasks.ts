@@ -11,20 +11,21 @@ import type {
   TaskStatus,
   UpdateTaskData
 } from './types'
+import type { TaskFiltersState } from './queryParams'
 
 import { ref, watch } from 'vue'
 import { useApi } from '~/composables/useApi'
 
-export const useTasks = () => {
+export const useTasks = (initialFilters: Partial<TaskFiltersState> = {}) => {
   const { apiFetch } = useApi()
   const tasks = ref<Task[]>([])
   const loading = ref<boolean>(true)
   const loadingMore = ref<boolean>(false)
   const errors = ref<FieldErrors>({})
-  const searchQuery = ref<string>('')
-  const statusFilter = ref<TaskStatus | ''>('')
-  const sortBy = ref<TaskSortField>('updated_at')
-  const sortDirection = ref<SortDirection>('desc')
+  const searchQuery = ref<string>(initialFilters.searchQuery ?? '')
+  const statusFilter = ref<TaskStatus | ''>(initialFilters.statusFilter ?? '')
+  const sortBy = ref<TaskSortField>(initialFilters.sortBy ?? 'updated_at')
+  const sortDirection = ref<SortDirection>(initialFilters.sortDirection ?? 'desc')
   const currentPage = ref<number>(0)
   const lastPage = ref<number>(1)
   const perPage = 15

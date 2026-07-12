@@ -71,11 +71,13 @@ const sourceChecks = [
   {
     file: './features/tasks/model/useTaskBoard.ts',
     required: [
-      "import { computed, onMounted, ref, watch } from 'vue'",
-      "import { useFormatDate, useInfiniteScroll } from '#imports'",
+      "import { computed, nextTick, onMounted, ref, watch } from 'vue'",
+      "import { useRoute, useRouter, useFormatDate, useInfiniteScroll } from '#imports'",
       "import { useAuth } from '~/features/auth/model/useAuth'",
       "import { useTasks } from '~/features/tasks/model/useTasks'",
-      "import { useTaskDialog } from '~/features/tasks/model/useTaskDialog'"
+      "import { useTaskDialog } from '~/features/tasks/model/useTaskDialog'",
+      "import {",
+      "from './queryParams'"
     ]
   },
   {
