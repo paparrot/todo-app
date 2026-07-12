@@ -55,9 +55,9 @@ it('searches tasks by title', function () {
     $service = new TaskService();
     $user = User::factory()->create();
 
-    Task::factory()->for($user)->create(['title' => 'Buy milk']);
-    Task::factory()->for($user)->create(['title' => 'Read a book']);
-    Task::factory()->for($user)->create(['title' => 'Milk the cow']);
+    Task::factory()->for($user)->create(['title' => 'Buy milk', 'due_date' => '2026-07-15']);
+    Task::factory()->for($user)->create(['title' => 'Read a book', 'due_date' => '2026-07-12']);
+    Task::factory()->for($user)->create(['title' => 'Milk the cow', 'due_date' => '2026-07-10']);
 
     $tasks = $service->getAllTasks($user, 15, 'due_date', 'desc', 'milk');
 
