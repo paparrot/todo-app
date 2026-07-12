@@ -11,6 +11,13 @@ use Illuminate\Validation\Rule;
 
 final class CreateTaskRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'status' => $this->input('status', TaskStatus::PENDING->value),
+        ]);
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -27,10 +34,10 @@ final class CreateTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "title" => ["required", "string", "max:255"],
-            "description" => ["nullable", "string"],
-            "due_date" => ["required", "date"],
-            "status" => ["required", Rule::enum(TaskStatus::class)],
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'due_date' => ['nullable', 'date'],
+            'status' => ['required', Rule::in([TaskStatus::PENDING->value])],
         ];
     }
 }

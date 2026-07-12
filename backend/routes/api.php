@@ -18,6 +18,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tasks', [TaskController::class, 'list'])->can('viewAny', Task::class);
     Route::get('/tasks/{task}', [TaskController::class, 'show'])->can('view', 'task');
     Route::post('/tasks', [TaskController::class, 'create'])->can('create', Task::class);
-    Route::put('/tasks/{task}', [TaskController::class, 'update'])->can('update', 'task');
+    Route::patch('/tasks/{task}', [TaskController::class, 'update'])->can('update', 'task');
     Route::delete('/tasks/{task}', [TaskController::class, 'delete'])->can('delete', 'task');
 });

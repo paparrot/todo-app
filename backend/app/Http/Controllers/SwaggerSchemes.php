@@ -15,7 +15,7 @@ use OpenApi\Attributes as OA;
     properties: [
         new OA\Property(property: 'id', type: 'integer', example: 1),
         new OA\Property(property: 'title', type: 'string', example: 'Buy milk'),
-        new OA\Property(property: 'description', type: 'string', example: 'From store'),
+        new OA\Property(property: 'description', type: 'string', nullable: true, example: 'From store'),
         new OA\Property(property: 'due_date', type: 'string', format: 'date', example: '2026-07-15'),
         new OA\Property(property: 'status', type: 'string', enum: ['pending', 'completed', 'in_progress'], example: 'pending'),
         new OA\Property(property: 'user_id', type: 'integer', example: 1),
@@ -24,12 +24,12 @@ use OpenApi\Attributes as OA;
 #[OA\Schema(
     schema: 'CreateTaskRequest',
     type: 'object',
-    required: ['title', 'due_date', 'status'],
+    required: ['title', 'due_date'],
     properties: [
         new OA\Property(property: 'title', type: 'string', example: 'Buy milk'),
-        new OA\Property(property: 'description', type: 'string', example: 'From store'),
+        new OA\Property(property: 'description', type: 'string', nullable: true, example: 'From store'),
         new OA\Property(property: 'due_date', type: 'string', format: 'date', example: '2026-07-15'),
-        new OA\Property(property: 'status', type: 'string', enum: ['pending', 'completed', 'in_progress'], example: 'pending'),
+        new OA\Property(property: 'status', type: 'string', enum: ['pending'], example: 'pending'),
     ]
 )]
 #[OA\Schema(
@@ -38,9 +38,9 @@ use OpenApi\Attributes as OA;
     required: ['title', 'due_date', 'status'],
     properties: [
         new OA\Property(property: 'title', type: 'string', example: 'Buy milk'),
-        new OA\Property(property: 'description', type: 'string', example: 'From store'),
+        new OA\Property(property: 'description', type: 'string', nullable: true, example: 'From store'),
         new OA\Property(property: 'due_date', type: 'string', format: 'date', example: '2026-07-15'),
-        new OA\Property(property: 'status', type: 'string', enum: ['pending', 'completed', 'in_progress'], example: 'pending'),
+        new OA\Property(property: 'status', type: 'string', enum: ['pending', 'in_progress', 'completed'], example: 'pending'),
     ]
 )]
 final class SwaggerSchemes {}

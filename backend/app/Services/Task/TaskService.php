@@ -44,7 +44,10 @@ final class TaskService
         User $user,
         CreateTaskDTO $createTaskDTO,
     ): TaskModel {
-        return $user->tasks()->create($createTaskDTO->toArray());
+        return $user->tasks()->create(array_merge(
+            $createTaskDTO->toArray(),
+            ['status' => TaskStatus::PENDING],
+        ));
     }
 
     public function updateTask(
@@ -55,6 +58,7 @@ final class TaskService
 
         return $task->refresh();
     }
+
 
     public function deleteTask(TaskModel $task): void
     {

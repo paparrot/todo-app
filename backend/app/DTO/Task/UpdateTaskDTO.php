@@ -18,16 +18,16 @@ final class UpdateTaskDTO
     ) {}
 
     /**
-     * @param  array<string, mixed>  $data
+     * @param array<string, mixed> $data
      */
     public static function fromArray(string $id, array $data): self
     {
         return new self(
             id: $id,
-            title: $data["title"],
-            description: $data["description"] ?? null,
-            dueDate: CarbonImmutable::parse($data["due_date"]),
-            status: TaskStatus::from($data["status"]),
+            title: $data['title'],
+            description: $data['description'] ?? null,
+            dueDate: CarbonImmutable::parse($data['due_date']),
+            status: TaskStatus::from($data['status']),
         );
     }
 
@@ -37,10 +37,10 @@ final class UpdateTaskDTO
     public function toArray(): array
     {
         return [
-            "title" => $this->title,
-            "description" => $this->description,
-            "due_date" => $this->dueDate,
-            "status" => $this->status,
+            'title' => $this->title,
+            'description' => $this->description,
+            'due_date' => $this->dueDate,
+            'status' => $this->status,
         ];
     }
 }

@@ -36,10 +36,7 @@
           </div>
           <div>
             <Select id="sort-by" label="Sort by" v-model="sortBy">
-              <option value="created_at">Created at</option>
-              <option value="updated_at">Updated at</option>
               <option value="due_date">Due date</option>
-              <option value="title">Title</option>
               <option value="status">Status</option>
             </Select>
           </div>
@@ -63,24 +60,49 @@
         <p class="text-slate-600">Loading tasks...</p>
       </div>
 
-      <div v-else class="grid gap-6">
+      <div v-if="errors.general?.length" class="mb-6 rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-sm text-danger-700">
+        {{ errors.general[0] }}
+      </div>
+
+      <div class="grid gap-6">
         <Card v-for="task in tasks" :key="task.id">
           <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div class="flex-1">
-              <h3 class="text-xl font-semibold text-slate-900">{{ task.title }}</h3>
+              <div :class="['inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.18em]', taskStatusClasses[task.status]]">
+                {{ taskStatusLabels[task.status] }}
+              </div>
+              <h3 class="mt-2 text-xl font-semibold text-slate-900">{{ task.title }}</h3>
               <p v-if="task.description" class="mt-2 text-slate-600">{{ task.description }}</p>
               <div class="mt-4 flex flex-wrap items-center gap-4">
                 <span class="text-sm text-slate-500">Due: {{ formatDate(task.due_date) }}</span>
-                <span :class="['px-3 py-1 rounded-full text-sm font-medium', taskStatusClasses[task.status]]">
-                  {{ taskStatusLabels[task.status] }}
-                </span>
               </div>
             </div>
-            <div class="flex gap-2">
-              <IconButton aria-label="Edit task" @click="openEditModal(task)">
+            <div class="flex flex-wrap items-center gap-2">
+              <Button
+                v-if="task.status === 'pending'"
+                size="sm"
+                type="button"
+                variant="secondary"
+                :disabled="tasksLoading"
+                @click="handleSetTaskStatus(task, 'in_progress')"
+              >
+                <PlayIcon class="h-3.5 w-3.5" />
+                Start
+              </Button>
+              <Button
+                v-else-if="task.status === 'in_progress'"
+                size="sm"
+                type="button"
+                :disabled="tasksLoading"
+                @click="handleSetTaskStatus(task, 'completed')"
+              >
+                <CheckIcon class="h-3.5 w-3.5" />
+                Complete
+              </Button>
+              <IconButton aria-label="Edit task" :disabled="tasksLoading" @click="openEditModal(task)">
                 <PencilIcon class="h-4 w-4" />
               </IconButton>
-              <IconButton aria-label="Delete task" variant="danger" @click="openDeleteModal(task)">
+              <IconButton aria-label="Delete task" variant="danger" :disabled="tasksLoading" @click="openDeleteModal(task)">
                 <TrashIcon class="h-4 w-4" />
               </IconButton>
             </div>
@@ -98,33 +120,23 @@
           placeholder="Buy milk"
           v-model="addForm.title"
         />
-        <div v-if="addErrors.title" class="text-danger-600 text-sm mt-1">{{ addErrors.title[0] }}</div>
+        <div v-if="addErrors.title" class="mt-1 text-sm text-danger-600">{{ addErrors.title[0] }}</div>
         <Textarea
           id="add-description"
           label="Description"
           placeholder="From store"
           v-model="addForm.description"
         />
-        <div v-if="addErrors.description" class="text-danger-600 text-sm mt-1">{{ addErrors.description[0] }}</div>
+        <div v-if="addErrors.description" class="mt-1 text-sm text-danger-600">{{ addErrors.description[0] }}</div>
         <Input
           id="add-due-date"
           label="Due Date"
           type="date"
           v-model="addForm.due_date"
         />
-        <div v-if="addErrors.due_date" class="text-danger-600 text-sm mt-1">{{ addErrors.due_date[0] }}</div>
-        <Select
-          id="add-status"
-          label="Status"
-          v-model="addForm.status"
-        >
-          <option value="pending">Pending</option>
-          <option value="in_progress">In Progress</option>
-          <option value="completed">Completed</option>
-        </Select>
-        <div v-if="addErrors.status" class="text-danger-600 text-sm mt-1">{{ addErrors.status[0] }}</div>
-        <div class="flex gap-3 mt-6">
-          <Button type="button" variant="secondary" @click="showAddModal = false" class="flex-1">Cancel</Button>
+        <div v-if="addErrors.due_date" class="mt-1 text-sm text-danger-600">{{ addErrors.due_date[0] }}</div>
+        <div class="mt-6 flex gap-3">
+          <Button type="button" variant="secondary" class="flex-1" @click="showAddModal = false">Cancel</Button>
           <Button type="submit" class="flex-1" :disabled="tasksLoading">
             {{ tasksLoading ? 'Adding...' : 'Add Task' }}
           </Button>
@@ -140,32 +152,28 @@
           label="Title"
           v-model="editForm.title"
         />
-        <div v-if="editErrors.title" class="text-danger-600 text-sm mt-1">{{ editErrors.title[0] }}</div>
+        <div v-if="editErrors.title" class="mt-1 text-sm text-danger-600">{{ editErrors.title[0] }}</div>
         <Textarea
           id="edit-description"
           label="Description"
           v-model="editForm.description"
         />
-        <div v-if="editErrors.description" class="text-danger-600 text-sm mt-1">{{ editErrors.description[0] }}</div>
+        <div v-if="editErrors.description" class="mt-1 text-sm text-danger-600">{{ editErrors.description[0] }}</div>
         <Input
           id="edit-due-date"
           label="Due Date"
           type="date"
           v-model="editForm.due_date"
         />
-        <div v-if="editErrors.due_date" class="text-danger-600 text-sm mt-1">{{ editErrors.due_date[0] }}</div>
-        <Select
-          id="edit-status"
-          label="Status"
-          v-model="editForm.status"
-        >
+        <div v-if="editErrors.due_date" class="mt-1 text-sm text-danger-600">{{ editErrors.due_date[0] }}</div>
+        <Select id="edit-status" label="Status" v-model="editForm.status">
           <option value="pending">Pending</option>
           <option value="in_progress">In Progress</option>
           <option value="completed">Completed</option>
         </Select>
-        <div v-if="editErrors.status" class="text-danger-600 text-sm mt-1">{{ editErrors.status[0] }}</div>
-        <div class="flex gap-3 mt-6">
-          <Button type="button" variant="secondary" @click="showEditModal = false" class="flex-1">Cancel</Button>
+        <div v-if="editErrors.status" class="mt-1 text-sm text-danger-600">{{ editErrors.status[0] }}</div>
+        <div class="mt-6 flex gap-3">
+          <Button type="button" variant="secondary" class="flex-1" @click="showEditModal = false">Cancel</Button>
           <Button type="submit" class="flex-1" :disabled="tasksLoading">
             {{ tasksLoading ? 'Saving...' : 'Save Changes' }}
           </Button>
@@ -177,7 +185,7 @@
       <h2 class="mb-4 text-2xl font-semibold tracking-tight text-slate-900">Delete Task</h2>
       <p class="mb-8 text-slate-600">Are you sure you want to delete this task? This action cannot be undone.</p>
       <div class="flex gap-3">
-        <Button variant="secondary" @click="showDeleteModal = false" class="flex-1">Cancel</Button>
+        <Button variant="secondary" class="flex-1" @click="showDeleteModal = false">Cancel</Button>
         <Button variant="danger" class="flex-1" :disabled="tasksLoading" @click="handleDeleteTask">
           {{ tasksLoading ? 'Deleting...' : 'Delete' }}
         </Button>
@@ -187,12 +195,19 @@
 </template>
 
 <script setup lang="ts">
-import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
-import type { CreateTaskData, SortDirection, Task, TaskSortField, TaskStatus, UpdateTaskData } from '~/types/api'
+import { CheckIcon, PencilIcon, PlayIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import type {
+  CreateTaskData,
+  SortDirection,
+  Task,
+  TaskSortField,
+  TaskStatus,
+  UpdateTaskData
+} from '../model/types'
 import type { FieldErrors } from '~/types/ui'
 
 const { logout } = useAuth()
-const { tasks, loading: tasksLoading, searchQuery, statusFilter, sortBy, sortDirection, getTasks, createTask, updateTask, deleteTask } = useTasks()
+const { tasks, loading: tasksLoading, errors, searchQuery, statusFilter, sortBy, sortDirection, getTasks, createTask, updateTask, deleteTask } = useTasks()
 const { formatDate } = useFormatDate()
 const showAddModal = ref<boolean>(false)
 const showEditModal = ref<boolean>(false)
@@ -214,11 +229,8 @@ const taskStatusLabels: Record<TaskStatus, string> = {
 }
 
 const sortFieldLabels: Record<TaskSortField, string> = {
-  title: 'Title',
   due_date: 'Due date',
-  status: 'Status',
-  created_at: 'Created at',
-  updated_at: 'Updated at'
+  status: 'Status'
 }
 
 const sortDirectionLabels: Record<SortDirection, string> = {
@@ -229,8 +241,7 @@ const sortDirectionLabels: Record<SortDirection, string> = {
 const addForm = ref<CreateTaskData>({
   title: '',
   description: '',
-  due_date: '',
-  status: 'pending'
+  due_date: ''
 })
 
 const editForm = ref<UpdateTaskData>({
@@ -246,7 +257,13 @@ const handleLogout = async (): Promise<void> => {
 }
 
 const openEditModal = (task: Task): void => {
-  editForm.value = { ...task }
+  editForm.value = {
+    id: task.id,
+    title: task.title,
+    description: task.description ?? '',
+    due_date: task.due_date,
+    status: task.status
+  }
   editErrors.value = {}
   showEditModal.value = true
 }
@@ -264,8 +281,7 @@ const handleAddTask = async (): Promise<void> => {
     addForm.value = {
       title: '',
       description: '',
-      due_date: '',
-      status: 'pending'
+      due_date: ''
     }
   } else {
     addErrors.value = result.errors || {}
@@ -280,6 +296,16 @@ const handleUpdateTask = async (): Promise<void> => {
   } else {
     editErrors.value = result.errors || {}
   }
+}
+
+const handleSetTaskStatus = async (task: Task, status: TaskStatus): Promise<void> => {
+  await updateTask({
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    due_date: task.due_date,
+    status
+  })
 }
 
 const handleDeleteTask = async (): Promise<void> => {

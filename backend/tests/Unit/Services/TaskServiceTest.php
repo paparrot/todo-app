@@ -16,7 +16,7 @@ it('returns paginated tasks for an owner', function () {
 
     Task::factory(3)->for($user)->create();
 
-    $tasks = $service->getAllTasks($user, 15, 'created_at', 'desc');
+    $tasks = $service->getAllTasks($user, 15, 'due_date', 'desc');
 
     expect($tasks->total())->toBe(3)
         ->and($tasks->count())->toBe(3)
@@ -31,7 +31,7 @@ it('returns paginated tasks for an admin', function () {
     Task::factory(3)->for($owner)->create();
     Task::factory()->for($admin)->create();
 
-    $tasks = $service->getAllTasks($admin, 15, 'created_at', 'desc');
+    $tasks = $service->getAllTasks($admin, 15, 'due_date', 'desc');
 
     expect($tasks->total())->toBe(4)
         ->and($tasks->count())->toBe(4)
@@ -45,7 +45,7 @@ it('filters tasks by status', function () {
     Task::factory()->for($user)->create(['status' => TaskStatus::PENDING]);
     Task::factory()->for($user)->create(['status' => TaskStatus::COMPLETED]);
 
-    $tasks = $service->getAllTasks($user, 15, 'created_at', 'desc', null, TaskStatus::COMPLETED);
+    $tasks = $service->getAllTasks($user, 15, 'status', 'desc', null, TaskStatus::COMPLETED);
 
     expect($tasks->total())->toBe(1)
         ->and($tasks->first()->status)->toBe(TaskStatus::COMPLETED);
@@ -59,7 +59,7 @@ it('searches tasks by title', function () {
     Task::factory()->for($user)->create(['title' => 'Read a book']);
     Task::factory()->for($user)->create(['title' => 'Milk the cow']);
 
-    $tasks = $service->getAllTasks($user, 15, 'created_at', 'desc', 'milk');
+    $tasks = $service->getAllTasks($user, 15, 'due_date', 'desc', 'milk');
 
     expect($tasks->total())->toBe(2)
         ->and($tasks->getCollection()->pluck('title')->all())
@@ -74,7 +74,6 @@ it('creates a task from dto', function () {
         title: 'New task',
         description: 'Description',
         dueDate: CarbonImmutable::parse('2026-12-31'),
-        status: TaskStatus::PENDING,
     );
 
     $task = $service->createTask($user, $dto);
@@ -92,7 +91,7 @@ it('updates a task', function () {
     $user = User::factory()->create();
     $task = Task::factory()
         ->for($user)
-        ->create(['title' => 'Old title']);
+        ->create(['title' => 'Old title', 'status' => TaskStatus::PENDING]);
 
     $dto = new UpdateTaskDTO(
         id: $task->id,

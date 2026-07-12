@@ -58,7 +58,7 @@ final class TaskController extends Controller
                     in: "query",
                     required: false,
                     description: "Field used to sort tasks.",
-                    schema: new OA\Schema(type: "string", enum: ["title", "due_date", "status", "created_at", "updated_at"], example: "created_at"),
+                    schema: new OA\Schema(type: "string", enum: ["due_date", "status"], example: "due_date"),
                 ),
                 new OA\Parameter(
                     name: "direction",
@@ -230,7 +230,7 @@ final class TaskController extends Controller
     }
 
     #[
-        OA\Put(
+        OA\Patch(
             path: "/tasks/{task}",
             summary: "Update task",
             security: [["sanctum" => []]],
@@ -307,10 +307,10 @@ final class TaskController extends Controller
             ],
         ),
     ]
-    public function delete(Task $task): JsonResponse
+    public function delete(Task $task): Response
     {
         $this->taskService->deleteTask($task);
 
-        return response()->json(data: null, status: Response::HTTP_NO_CONTENT);
+        return response()->noContent();
     }
 }

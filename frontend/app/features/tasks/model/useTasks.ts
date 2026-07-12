@@ -1,16 +1,15 @@
+import type { ActionResult, ApiErrorResponse } from '~/types/api/common'
+import type { FieldErrors } from '~/types/ui'
 import type {
-  ActionResult,
-  ApiErrorResponse,
-  ApiResourceResponse,
   CreateTaskData,
-  PaginatedResponse,
   SortDirection,
   Task,
+  TaskListResponse,
+  TaskResponse,
   TaskSortField,
   TaskStatus,
   UpdateTaskData
-} from '~/types/api'
-import type { FieldErrors } from '~/types/ui'
+} from './types'
 
 function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
@@ -47,28 +46,33 @@ export const useTasks = () => {
   const errors = ref<FieldErrors>({})
   const searchQuery = ref<string>('')
   const statusFilter = ref<TaskStatus | ''>('')
-  const sortBy = ref<TaskSortField>('created_at')
+  const sortBy = ref<TaskSortField>('due_date')
   const sortDirection = ref<SortDirection>('desc')
+
+  const buildQuery = (): string => {
+    const params = new URLSearchParams()
+
+    if (searchQuery.value) {
+      params.append('search', searchQuery.value)
+    }
+
+    if (statusFilter.value) {
+      params.append('status', statusFilter.value)
+    }
+
+    params.append('sort', sortBy.value)
+    params.append('direction', sortDirection.value)
+
+    return params.toString()
+  }
 
   const getTasks = async (): Promise<void> => {
     loading.value = true
     errors.value = {}
 
     try {
-      const params = new URLSearchParams()
-      if (searchQuery.value) {
-        params.append('search', searchQuery.value)
-      }
-
-      if (statusFilter.value) {
-        params.append('status', statusFilter.value)
-      }
-
-      params.append('sort', sortBy.value)
-      params.append('direction', sortDirection.value)
-
-      const query = params.toString()
-      const response = await apiFetch<PaginatedResponse<Task>>(
+      const query = buildQuery()
+      const response = await apiFetch<TaskListResponse>(
         query ? `/tasks?${query}` : '/tasks'
       )
       tasks.value = response.data
@@ -89,11 +93,11 @@ export const useTasks = () => {
     errors.value = {}
 
     try {
-      const response = await apiFetch<ApiResourceResponse<Task>>('/tasks', {
+      await apiFetch<TaskResponse>('/tasks', {
         method: 'POST',
         body: data
       })
-      tasks.value.push(response.data)
+      await getTasks()
       return { success: true }
     } catch (error: unknown) {
       errors.value = extractApiErrors(error)
@@ -108,14 +112,11 @@ export const useTasks = () => {
     errors.value = {}
 
     try {
-      const response = await apiFetch<ApiResourceResponse<Task>>(`/tasks/${data.id}`, {
-        method: 'PUT',
+      await apiFetch<TaskResponse>(`/tasks/${data.id}`, {
+        method: 'PATCH',
         body: data
       })
-      const index = tasks.value.findIndex(task => task.id === data.id)
-      if (index !== -1) {
-        tasks.value[index] = response.data
-      }
+      await getTasks()
       return { success: true }
     } catch (error: unknown) {
       errors.value = extractApiErrors(error)
@@ -125,6 +126,8 @@ export const useTasks = () => {
     }
   }
 
+
+
   const deleteTask = async (id: number): Promise<ActionResult> => {
     loading.value = true
     errors.value = {}
@@ -133,7 +136,7 @@ export const useTasks = () => {
       await apiFetch(`/tasks/${id}`, {
         method: 'DELETE'
       })
-      tasks.value = tasks.value.filter(task => task.id !== id)
+      await getTasks()
       return { success: true }
     } catch (error: unknown) {
       errors.value = extractApiErrors(error)
