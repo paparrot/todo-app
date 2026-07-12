@@ -1,25 +1,46 @@
 <template>
   <div>
-    <label v-if="label" :for="id" class="block text-sm font-medium text-gray-700 mb-2">{{ label }}</label>
+    <label v-if="label" :for="id" class="mb-2 block text-sm font-medium text-slate-700">{{ label }}</label>
     <textarea
       :id="id"
       :value="modelValue"
       :placeholder="placeholder"
       :rows="rows"
-      @input="$emit('update:modelValue', $event.target.value)"
-      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+      :disabled="disabled"
+      @input="handleInput"
+      class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 disabled:cursor-not-allowed disabled:bg-slate-100"
     ></textarea>
   </div>
 </template>
 
-<script setup>
-defineProps({
-  id: { type: String, required: true },
-  label: { type: String, default: '' },
-  modelValue: { type: String, default: '' },
-  placeholder: { type: String, default: '' },
-  rows: { type: Number, default: 3 }
+<script setup lang="ts">
+interface TextareaProps {
+  id: string
+  label?: string
+  modelValue?: string
+  placeholder?: string
+  rows?: number
+  disabled?: boolean
+}
+
+const props = withDefaults(defineProps<TextareaProps>(), {
+  label: '',
+  modelValue: '',
+  placeholder: '',
+  rows: 3,
+  disabled: false
 })
 
-defineEmits(['update:modelValue'])
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string): void
+}>()
+
+function handleInput(event: Event) {
+  const target = event.target as HTMLTextAreaElement | null
+  if (!target) {
+    return
+  }
+
+  emit('update:modelValue', target.value)
+}
 </script>

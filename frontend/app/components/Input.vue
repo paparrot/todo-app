@@ -1,25 +1,52 @@
 <template>
   <div>
-    <label v-if="label" :for="id" class="block text-sm font-medium text-gray-700 mb-2">{{ label }}</label>
+    <label v-if="label" :for="id" class="mb-2 block text-sm font-medium text-slate-700">{{ label }}</label>
     <input
       :id="id"
       :type="type"
       :value="modelValue"
       :placeholder="placeholder"
-      @input="$emit('update:modelValue', $event.target.value)"
-      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+      :disabled="disabled"
+      @input="handleInput"
+      class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 disabled:cursor-not-allowed disabled:bg-slate-100"
     />
   </div>
 </template>
 
-<script setup>
-defineProps({
-  id: { type: String, required: true },
-  label: { type: String, default: '' },
-  type: { type: String, default: 'text' },
-  modelValue: { type: [String, Number], default: '' },
-  placeholder: { type: String, default: '' }
+<script setup lang="ts">
+type InputType = 'text' | 'email' | 'password' | 'number' | 'date'
+
+interface InputProps {
+  id: string
+  label?: string
+  type?: InputType
+  modelValue?: string | number
+  placeholder?: string
+  disabled?: boolean
+}
+
+const props = withDefaults(defineProps<InputProps>(), {
+  label: '',
+  type: 'text',
+  modelValue: '',
+  placeholder: '',
+  disabled: false
 })
 
-defineEmits(['update:modelValue'])
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string | number): void
+}>()
+
+function handleInput(event: Event) {
+  const target = event.target as HTMLInputElement | null
+  if (!target) {
+    return
+  }
+
+  const value = props.type === 'number'
+    ? (target.value === '' ? '' : Number(target.value))
+    : target.value
+
+  emit('update:modelValue', value)
+}
 </script>
