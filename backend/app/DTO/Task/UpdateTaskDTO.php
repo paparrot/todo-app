@@ -26,8 +26,8 @@ final class UpdateTaskDTO
             id: $id,
             title: $data['title'],
             description: $data['description'] ?? null,
-            dueDate: isset($data['due_date']) && $data['due_date'] !== null
-                ? CarbonImmutable::parse($data['due_date'])
+            dueDate: filled($data['due_date'] ?? null)
+                ? CarbonImmutable::parse((string) $data['due_date'])
                 : null,
             status: TaskStatus::from($data['status']),
         );

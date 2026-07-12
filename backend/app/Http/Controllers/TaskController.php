@@ -14,7 +14,6 @@ use App\Http\Resources\Task\TaskResource;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\Task\TaskService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -280,9 +279,8 @@ final class TaskController extends Controller
             ],
         ),
     ]
-    public function create(
-        CreateTaskRequest $request,
-    ): TaskResource|JsonResponse {
+    public function create(CreateTaskRequest $request): TaskResource
+    {
         /** @var User $user */
         $user = $request->user();
 
@@ -335,10 +333,8 @@ final class TaskController extends Controller
             ],
         ),
     ]
-    public function update(
-        UpdateTaskRequest $request,
-        Task $task,
-    ): TaskResource|JsonResponse {
+    public function update(UpdateTaskRequest $request, Task $task): TaskResource
+    {
         $task = $this->taskService->updateTask(
             task: $task,
             updateTaskDTO: UpdateTaskDTO::fromArray(

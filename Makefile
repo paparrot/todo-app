@@ -1,4 +1,4 @@
-.PHONY: help dev up down build restart logs ps test lint migrate seed fresh artisan composer-install frontend-install frontend-dev frontend-build frontend-generate frontend-preview frontend-test frontend-test-watch frontend-lint frontend-format frontend-typecheck
+.PHONY: help dev up down build restart logs ps check test lint backend-check backend-test backend-lint backend-analyze migrate seed fresh artisan composer-install frontend-check frontend-install frontend-dev frontend-build frontend-generate frontend-preview frontend-test frontend-test-watch frontend-lint frontend-format frontend-typecheck
 
 COMPOSE ?= docker compose
 APP_SERVICE ?= backend
@@ -12,8 +12,16 @@ help:
 	@echo "  make restart             Перезапустить окружение"
 	@echo "  make logs                Показать логи контейнеров"
 	@echo "  make ps                  Показать состояние контейнеров"
-	@echo "  make test                Запустить backend-тесты"
-	@echo "  make lint                Проверить backend через Pint"
+	@echo "  make check               Запустить все проверки backend и frontend"
+	@echo "  make backend-check       Запустить все проверки backend"
+	@echo "  make backend-test        Запустить backend-тесты"
+	@echo "  make backend-lint        Проверить backend через Pint"
+	@echo "  make backend-analyze     Проверить backend через PHPStan"
+	@echo "  make frontend-check      Запустить все проверки frontend"
+	@echo "  make frontend-test       Запустить frontend-тесты"
+	@echo "  make frontend-lint       Проверить frontend через ESLint"
+	@echo "  make frontend-format     Отформатировать frontend через Prettier"
+	@echo "  make frontend-typecheck  Проверить типы frontend через TypeScript typecheck"
 	@echo "  make migrate             Выполнить миграции"
 	@echo "  make seed                Запустить сидеры"
 	@echo "  make fresh               Сбросить БД и выполнить сидеры"
@@ -24,11 +32,7 @@ help:
 	@echo "  make frontend-build      Собрать production-версию frontend"
 	@echo "  make frontend-generate   Сгенерировать статический билд frontend"
 	@echo "  make frontend-preview    Запустить preview production-сборки"
-	@echo "  make frontend-test       Запустить frontend-тесты"
 	@echo "  make frontend-test-watch Запустить frontend-тесты в watch-режиме"
-	@echo "  make frontend-lint       Проверить frontend через ESLint"
-	@echo "  make frontend-format     Отформатировать frontend через Prettier"
-	@echo "  make frontend-typecheck  Проверить типы frontend через TypeScript typecheck"
 
 dev:
 	$(COMPOSE) up --remove-orphans
@@ -50,11 +54,21 @@ logs:
 ps:
 	$(COMPOSE) ps
 
-test:
+check: backend-check frontend-check
+
+backend-check: backend-test backend-lint backend-analyze
+
+backend-test:
 	$(COMPOSE) exec -T $(APP_SERVICE) php artisan test
 
-lint:
+backend-lint:
 	$(COMPOSE) exec -T $(APP_SERVICE) ./vendor/bin/pint --test
+
+backend-analyze:
+	$(COMPOSE) exec -T $(APP_SERVICE) ./vendor/bin/phpstan analyse --memory-limit=1G
+
+test: backend-test
+lint: backend-lint
 
 migrate:
 	$(COMPOSE) exec -T $(APP_SERVICE) php artisan migrate
@@ -85,6 +99,8 @@ frontend-generate:
 
 frontend-preview:
 	$(COMPOSE) run --rm frontend npm run preview
+
+frontend-check: frontend-test frontend-lint frontend-typecheck
 
 frontend-test:
 	$(COMPOSE) exec -T frontend npm run test

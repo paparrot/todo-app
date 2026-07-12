@@ -126,22 +126,28 @@ final class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $user = User::where('email', $request->email)->first();
-        if (! $user) {
-            return response()->json(data: ['message' => 'User not found'], status: Response::HTTP_NOT_FOUND);
+        if ($user === null) {
+            return response()->json(
+                data: ['message' => 'User not found'],
+                status: Response::HTTP_NOT_FOUND,
+            );
         }
         if (! Hash::check($request->password, $user->password)) {
-            return response()->json(data: ['message' => 'Invalid credentials'],
-                status: Response::HTTP_UNAUTHORIZED
+            return response()->json(
+                data: ['message' => 'Invalid credentials'],
+                status: Response::HTTP_UNAUTHORIZED,
             );
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(data: [
-            'token' => $token,
-            'user' => $user,
-            'message' => 'Login successful',
-        ]);
+        return response()->json(
+            data: [
+                'token' => $token,
+                'user' => $user,
+                'message' => 'Login successful',
+            ],
+        );
     }
 
     #[
@@ -161,7 +167,13 @@ final class AuthController extends Controller
     ]
     public function logout(Request $request): JsonResponse
     {
-        $request->user()?->tokens()?->delete();
+        $user = $request->user();
+
+        if ($user !== null) {
+            foreach ($user->tokens as $token) {
+                $token->delete();
+            }
+        }
 
         return response()->json(data: ['message' => 'Logged out']);
     }

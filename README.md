@@ -77,24 +77,35 @@ php artisan migrate:fresh --seed
 
 ## Полезные команды
 
+### Общие
+
+```bash
+make dev       # запустить backend, frontend и БД в режиме разработки
+make up        # поднять контейнеры в фоне
+make down      # остановить контейнеры
+make build     # пересобрать образы
+make restart   # перезапустить окружение
+make logs      # смотреть логи
+make ps        # статус контейнеров
+make check     # запустить все проверки backend и frontend
+```
+
 ### Backend
 
 ```bash
-make down        # остановить контейнеры
-make build       # пересобрать образы
-make restart     # перезапустить окружение
-make logs        # смотреть логи
-make ps          # статус контейнеров
-make test        # запустить тесты backend
-make lint        # проверить код через Pint
-make migrate     # выполнить миграции
-make seed        # запустить сидеры
-make fresh       # сбросить БД и заново выполнить сидеры
+make backend-check     # запустить все проверки backend
+make backend-test      # запустить backend-тесты
+make backend-lint      # проверить код через Pint
+make backend-analyze   # проверить код через PHPStan
+make migrate           # выполнить миграции
+make seed              # запустить сидеры
+make fresh             # сбросить БД и заново выполнить сидеры
 ```
 
 ### Frontend
 
 ```bash
+make frontend-check      # запустить все проверки frontend
 make frontend-install     # установить frontend-зависимости
 make frontend-dev         # запустить Nuxt в режиме разработки
 make frontend-build       # собрать production-версию frontend

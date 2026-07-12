@@ -46,6 +46,9 @@ final class User extends Authenticatable
         return $this->role === UserRole::OWNER;
     }
 
+    /**
+     * @return HasMany<Task, $this>
+     */
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);

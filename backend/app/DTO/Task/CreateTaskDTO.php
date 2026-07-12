@@ -22,8 +22,8 @@ final class CreateTaskDTO
         return new self(
             title: $data['title'],
             description: $data['description'] ?? null,
-            dueDate: isset($data['due_date']) && $data['due_date'] !== null
-                ? CarbonImmutable::parse($data['due_date'])
+            dueDate: filled($data['due_date'] ?? null)
+                ? CarbonImmutable::parse((string) $data['due_date'])
                 : null,
         );
     }

@@ -1,0 +1,15 @@
+includes:
+    - vendor/nunomaduro/larastan/extension.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+
+parameters:
+    level: 5
+    paths:
+        - app
+        - routes
+    excludePaths:
+        - bootstrap/cache
+    reportUnmatchedIgnoredErrors: true
+    treatPhpDocTypesAsCertain: false
