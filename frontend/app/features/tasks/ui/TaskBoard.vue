@@ -14,45 +14,15 @@
       </div>
     </div>
 
-    <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
-        <div class="grid gap-4 lg:grid-cols-4">
-          <div class="lg:col-span-1">
-            <Input
-              id="search"
-              label="Search Tasks"
-              placeholder="Search by title..."
-              v-model="searchQuery"
-            />
-          </div>
-          <div>
-            <Select id="filter-status" label="Status" v-model="statusFilter">
-              <option value="">All statuses</option>
-              <option value="pending">Pending</option>
-              <option value="in_progress">In Progress</option>
-              <option value="completed">Completed</option>
-            </Select>
-          </div>
-          <div>
-            <Select id="sort-by" label="Sort by" v-model="sortBy">
-              <option value="due_date">Due date</option>
-              <option value="status">Status</option>
-            </Select>
-          </div>
-          <div>
-            <Select id="sort-direction" label="Direction" v-model="sortDirection">
-              <option value="desc">Descending</option>
-              <option value="asc">Ascending</option>
-            </Select>
-          </div>
-        </div>
-        <p class="mt-4 text-sm text-slate-500">
-          Filter: <span class="font-medium text-slate-700">{{ statusFilter ? taskStatusLabels[statusFilter] : 'All statuses' }}</span>
-          <span class="mx-1">·</span>
-          Sorting by <span class="font-medium text-slate-700">{{ sortFieldLabels[sortBy] }}</span>
-          <span class="mx-1">·</span>
-          <span class="font-medium text-slate-700">{{ sortDirectionLabels[sortDirection] }}</span>
-        </p>
-      </div>
+    <TaskFiltersPanel
+      v-model:search-query="searchQuery"
+      v-model:status-filter="statusFilter"
+      v-model:sort-by="sortBy"
+      v-model:sort-direction="sortDirection"
+      :task-status-labels="taskStatusLabels"
+      :sort-field-labels="sortFieldLabels"
+      :sort-direction-labels="sortDirectionLabels"
+    />
 
       <div v-if="tasksLoading" class="grid gap-6">
         <Card v-for="index in 3" :key="index">
@@ -241,6 +211,7 @@
 
 <script setup lang="ts">
 import { CheckIcon, PencilIcon, PlayIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import TaskFiltersPanel from './components/TaskFiltersPanel.vue'
 import type {
   CreateTaskData,
   SortDirection,
