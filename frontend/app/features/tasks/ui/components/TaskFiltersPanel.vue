@@ -19,6 +19,8 @@
       </div>
       <div>
         <Select id="sort-by" label="Sort by" v-model="sortBy">
+          <option value="updated_at">Updated time</option>
+          <option value="created_at">Created time</option>
           <option value="due_date">Due date</option>
           <option value="status">Status</option>
         </Select>

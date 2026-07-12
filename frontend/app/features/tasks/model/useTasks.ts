@@ -23,7 +23,7 @@ export const useTasks = () => {
   const errors = ref<FieldErrors>({})
   const searchQuery = ref<string>('')
   const statusFilter = ref<TaskStatus | ''>('')
-  const sortBy = ref<TaskSortField>('due_date')
+  const sortBy = ref<TaskSortField>('updated_at')
   const sortDirection = ref<SortDirection>('desc')
   const currentPage = ref<number>(0)
   const lastPage = ref<number>(1)
@@ -33,6 +33,41 @@ export const useTasks = () => {
     tasks.value = []
     currentPage.value = 0
     lastPage.value = 1
+  }
+
+  const matchesCurrentFilters = (task: Task): boolean => {
+    if (statusFilter.value && task.status !== statusFilter.value) {
+      return false
+    }
+
+    if (!searchQuery.value) {
+      return true
+    }
+
+    const query = searchQuery.value.toLowerCase()
+    const title = task.title.toLowerCase()
+    const description = task.description?.toLowerCase() ?? ''
+
+    return title.includes(query) || description.includes(query)
+  }
+
+  const prependTask = (task: Task): void => {
+    tasks.value = [task, ...tasks.value.filter((existingTask: Task) => existingTask.id !== task.id)]
+  }
+
+  const removeTaskFromList = (id: number): void => {
+    tasks.value = tasks.value.filter((task: Task) => task.id !== id)
+  }
+
+  const appendUniqueTasks = (newTasks: Task[]): void => {
+    const existingIds = new Set(tasks.value.map((task: Task) => task.id))
+    const uniqueNewTasks = newTasks.filter((task) => !existingIds.has(task.id))
+
+    if (uniqueNewTasks.length === 0) {
+      return
+    }
+
+    tasks.value = [...tasks.value, ...uniqueNewTasks]
   }
 
   const fetchTasks = async (page: number, replace = false): Promise<void> => {
@@ -53,7 +88,11 @@ export const useTasks = () => {
         sortBy: sortBy.value,
         sortDirection: sortDirection.value
       })}`)
-      tasks.value = replace ? response.data : [...tasks.value, ...response.data]
+      if (replace) {
+        tasks.value = response.data
+      } else {
+        appendUniqueTasks(response.data)
+      }
       currentPage.value = response.meta.current_page
       lastPage.value = response.meta.last_page
     } catch (error: unknown) {
@@ -89,11 +128,15 @@ export const useTasks = () => {
     errors.value = {}
 
     try {
-      await apiFetch<TaskResponse>('/tasks', {
+      const response = await apiFetch<TaskResponse>('/tasks', {
         method: 'POST',
         body: data
       })
-      await getTasks()
+
+      if (matchesCurrentFilters(response.data)) {
+        prependTask(response.data)
+      }
+
       return { success: true }
     } catch (error: unknown) {
       errors.value = extractTaskApiErrors(error)
@@ -108,11 +151,18 @@ export const useTasks = () => {
     errors.value = {}
 
     try {
-      await apiFetch<TaskResponse>(`/tasks/${data.id}`, {
+      const response = await apiFetch<TaskResponse>(`/tasks/${data.id}`, {
         method: 'PATCH',
         body: data
       })
-      await getTasks()
+
+      if (!matchesCurrentFilters(response.data)) {
+        removeTaskFromList(response.data.id)
+      } else {
+        removeTaskFromList(response.data.id)
+        prependTask(response.data)
+      }
+
       return { success: true }
     } catch (error: unknown) {
       errors.value = extractTaskApiErrors(error)
@@ -130,7 +180,8 @@ export const useTasks = () => {
       await apiFetch(`/tasks/${id}`, {
         method: 'DELETE'
       })
-      await getTasks()
+
+      removeTaskFromList(id)
       return { success: true }
     } catch (error: unknown) {
       errors.value = extractTaskApiErrors(error)

@@ -13,6 +13,8 @@ export const taskStatusLabels: Record<TaskStatus, string> = {
 }
 
 export const sortFieldLabels: Record<TaskSortField, string> = {
+  updated_at: 'Updated time',
+  created_at: 'Created time',
   due_date: 'Due date',
   status: 'Status'
 }

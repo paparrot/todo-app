@@ -1,7 +1,7 @@
 import type { ApiResourceResponse, PaginatedResponse } from '~/types/api/common'
 
 export type TaskStatus = 'pending' | 'completed' | 'in_progress'
-export type TaskSortField = 'due_date' | 'status'
+export type TaskSortField = 'updated_at' | 'created_at' | 'due_date' | 'status'
 export type SortDirection = 'asc' | 'desc'
 
 export interface Task {
@@ -12,6 +12,8 @@ export interface Task {
   status: TaskStatus
   user_id: number
   user_name: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface CreateTaskData {

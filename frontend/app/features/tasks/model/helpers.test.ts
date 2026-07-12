@@ -21,11 +21,11 @@ describe('task helpers', () => {
       perPage: 15,
       search: '',
       statusFilter: '',
-      sortBy: 'due_date',
+      sortBy: 'updated_at',
       sortDirection: 'desc'
     })
 
-    expect(query).toBe('page=1&per_page=15&sort=due_date&direction=desc')
+    expect(query).toBe('page=1&per_page=15&sort=updated_at&direction=desc')
   })
 
   it('extracts api validation errors', () => {
