@@ -18,7 +18,7 @@ final class UpdateTaskDTO
     ) {}
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(string $id, array $data): self
     {

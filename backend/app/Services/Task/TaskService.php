@@ -25,17 +25,17 @@ final class TaskService
         $query = $user->isAdmin() ? TaskModel::query() : $user->tasks();
 
         if ($search !== null) {
-            $query->whereRaw("LOWER(title) LIKE ?", [
-                "%" . Str::lower($search) . "%",
+            $query->whereRaw('LOWER(title) LIKE ?', [
+                '%'.Str::lower($search).'%',
             ]);
         }
 
         if ($status !== null) {
-            $query->where("status", $status->value);
+            $query->where('status', $status->value);
         }
 
         return $query
-            ->with("user:id,name")
+            ->with('user:id,name')
             ->orderBy($sortBy, $direction)
             ->paginate($perPage)
             ->withQueryString();
@@ -49,7 +49,7 @@ final class TaskService
             ->tasks()
             ->create(
                 array_merge($createTaskDTO->toArray(), [
-                    "status" => TaskStatus::PENDING,
+                    'status' => TaskStatus::PENDING,
                 ]),
             );
     }

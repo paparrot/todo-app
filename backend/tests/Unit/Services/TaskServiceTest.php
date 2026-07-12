@@ -11,7 +11,7 @@ use App\Services\Task\TaskService;
 use Carbon\CarbonImmutable;
 
 it('returns paginated tasks for an owner', function () {
-    $service = new TaskService();
+    $service = new TaskService;
     $user = User::factory()->create();
 
     Task::factory(3)->for($user)->create();
@@ -24,7 +24,7 @@ it('returns paginated tasks for an owner', function () {
 });
 
 it('returns paginated tasks for an admin', function () {
-    $service = new TaskService();
+    $service = new TaskService;
     $admin = User::factory()->admin()->create();
     $owner = User::factory()->create();
 
@@ -39,7 +39,7 @@ it('returns paginated tasks for an admin', function () {
 });
 
 it('filters tasks by status', function () {
-    $service = new TaskService();
+    $service = new TaskService;
     $user = User::factory()->create();
 
     Task::factory()->for($user)->create(['status' => TaskStatus::PENDING]);
@@ -52,7 +52,7 @@ it('filters tasks by status', function () {
 });
 
 it('searches tasks by title', function () {
-    $service = new TaskService();
+    $service = new TaskService;
     $user = User::factory()->create();
 
     Task::factory()->for($user)->create(['title' => 'Buy milk', 'due_date' => '2026-07-15']);
@@ -67,7 +67,7 @@ it('searches tasks by title', function () {
 });
 
 it('creates a task from dto', function () {
-    $service = new TaskService();
+    $service = new TaskService;
     $user = User::factory()->create();
 
     $dto = new CreateTaskDTO(
@@ -89,7 +89,7 @@ it('creates a task from dto', function () {
 });
 
 it('updates a task', function () {
-    $service = new TaskService();
+    $service = new TaskService;
     $user = User::factory()->create();
     $task = Task::factory()
         ->for($user)
@@ -114,7 +114,7 @@ it('updates a task', function () {
 });
 
 it('deletes a task', function () {
-    $service = new TaskService();
+    $service = new TaskService;
     $task = Task::factory()->create();
 
     $service->deleteTask($task);

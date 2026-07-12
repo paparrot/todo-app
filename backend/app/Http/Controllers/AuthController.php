@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enum\User\UserRole;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use OpenApi\Attributes as OA;
-use App\Http\Requests\Auth\RegisterRequest;
-use App\Http\Requests\Auth\LoginRequest;
 use Symfony\Component\HttpFoundation\Response;
 
 final class AuthController extends Controller
@@ -127,11 +127,11 @@ final class AuthController extends Controller
     {
         $user = User::where('email', $request->email)->first();
         if (! $user) {
-            return response()->json(data:['message' => 'User not found'],status: Response::HTTP_NOT_FOUND);
+            return response()->json(data: ['message' => 'User not found'], status: Response::HTTP_NOT_FOUND);
         }
         if (! Hash::check($request->password, $user->password)) {
-            return response()->json(data:['message' => 'Invalid credentials'],
-            status: Response::HTTP_UNAUTHORIZED
+            return response()->json(data: ['message' => 'Invalid credentials'],
+                status: Response::HTTP_UNAUTHORIZED
             );
         }
 

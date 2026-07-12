@@ -40,13 +40,69 @@ it('lists paginated tasks for an admin', function () {
         ->assertJsonPath('meta.last_page', 2);
 });
 
+it('sorts tasks by updated_at in descending order by default', function () {
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+
+    Task::factory()
+        ->for($user)
+        ->create([
+            'title' => 'Older task',
+            'created_at' => '2026-07-10 10:00:00',
+            'updated_at' => '2026-07-10 10:00:00',
+        ]);
+    Task::factory()
+        ->for($user)
+        ->create([
+            'title' => 'Newer task',
+            'created_at' => '2026-07-12 10:00:00',
+            'updated_at' => '2026-07-12 10:00:00',
+        ]);
+
+    $this->getJson('/api/tasks?per_page=10')
+        ->assertSuccessful()
+        ->assertJsonPath('data.0.title', 'Newer task')
+        ->assertJsonPath('data.1.title', 'Older task');
+});
+
+it('sorts tasks by created_at in ascending order', function () {
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+
+    Task::factory()
+        ->for($user)
+        ->create([
+            'title' => 'Later task',
+            'created_at' => '2026-07-12 10:00:00',
+            'updated_at' => '2026-07-12 10:00:00',
+        ]);
+    Task::factory()
+        ->for($user)
+        ->create([
+            'title' => 'Earlier task',
+            'created_at' => '2026-07-10 10:00:00',
+            'updated_at' => '2026-07-11 10:00:00',
+        ]);
+
+    $this->getJson('/api/tasks?sort=created_at&direction=asc&per_page=10')
+        ->assertSuccessful()
+        ->assertJsonPath('data.0.title', 'Earlier task')
+        ->assertJsonPath('data.1.title', 'Later task');
+});
+
 it('sorts tasks by due date in ascending order', function () {
     $user = User::factory()->create();
     Sanctum::actingAs($user);
 
-    Task::factory()->for($user)->create(['due_date' => '2026-07-20']);
-    Task::factory()->for($user)->create(['due_date' => '2026-07-10']);
-    Task::factory()->for($user)->create(['due_date' => '2026-07-15']);
+    Task::factory()
+        ->for($user)
+        ->create(['due_date' => '2026-07-20']);
+    Task::factory()
+        ->for($user)
+        ->create(['due_date' => '2026-07-10']);
+    Task::factory()
+        ->for($user)
+        ->create(['due_date' => '2026-07-15']);
 
     $this->getJson('/api/tasks?sort=due_date&direction=asc&per_page=10')
         ->assertSuccessful()
@@ -59,9 +115,15 @@ it('filters tasks by status', function () {
     $user = User::factory()->create();
     Sanctum::actingAs($user);
 
-    Task::factory()->for($user)->create(['status' => TaskStatus::PENDING]);
-    Task::factory()->for($user)->create(['status' => TaskStatus::COMPLETED]);
-    Task::factory()->for($user)->create(['status' => TaskStatus::COMPLETED]);
+    Task::factory()
+        ->for($user)
+        ->create(['status' => TaskStatus::PENDING]);
+    Task::factory()
+        ->for($user)
+        ->create(['status' => TaskStatus::COMPLETED]);
+    Task::factory()
+        ->for($user)
+        ->create(['status' => TaskStatus::COMPLETED]);
 
     $this->getJson('/api/tasks?status=completed&per_page=10')
         ->assertSuccessful()
@@ -74,11 +136,19 @@ it('searches tasks by title', function () {
     $user = User::factory()->create();
     Sanctum::actingAs($user);
 
-    Task::factory()->for($user)->create(['title' => 'Buy milk', 'due_date' => '2026-07-10']);
-    Task::factory()->for($user)->create(['title' => 'Read a book', 'due_date' => '2026-07-12']);
-    Task::factory()->for($user)->create(['title' => 'Milk the cow', 'due_date' => '2026-07-15']);
+    Task::factory()
+        ->for($user)
+        ->create(['title' => 'Buy milk', 'due_date' => '2026-07-10']);
+    Task::factory()
+        ->for($user)
+        ->create(['title' => 'Read a book', 'due_date' => '2026-07-12']);
+    Task::factory()
+        ->for($user)
+        ->create(['title' => 'Milk the cow', 'due_date' => '2026-07-15']);
 
-    $this->getJson('/api/tasks?search=milk&per_page=10&sort=due_date&direction=asc')
+    $this->getJson(
+        '/api/tasks?search=milk&per_page=10&sort=due_date&direction=asc',
+    )
         ->assertSuccessful()
         ->assertJsonCount(2, 'data')
         ->assertJsonPath('data.0.title', 'Buy milk')
@@ -157,7 +227,9 @@ it('forbids admins from creating tasks', function () {
 it('updates a task through patch request', function () {
     $user = User::factory()->create();
     Sanctum::actingAs($user);
-    $task = Task::factory()->for($user)->create(['status' => TaskStatus::PENDING]);
+    $task = Task::factory()
+        ->for($user)
+        ->create(['status' => TaskStatus::PENDING]);
 
     $this->patchJson("/api/tasks/{$task->id}", [
         'title' => 'Updated title',
@@ -189,8 +261,7 @@ it('forbids deleting another user task', function () {
     Sanctum::actingAs($user);
     $task = Task::factory()->for($otherUser)->create();
 
-    $this->deleteJson("/api/tasks/{$task->id}")
-        ->assertForbidden();
+    $this->deleteJson("/api/tasks/{$task->id}")->assertForbidden();
 });
 
 it('validates required fields on create', function () {
@@ -230,13 +301,10 @@ it('validates list filters', function () {
     $user = User::factory()->create();
     Sanctum::actingAs($user);
 
-    $this->getJson('/api/tasks?status=invalid&search=' . str_repeat('a', 256))
+    $this->getJson('/api/tasks?status=invalid&search='.str_repeat('a', 256))
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['status', 'search']);
 });
-
-
-
 
 it('rejects unauthenticated requests', function () {
     $this->getJson('/api/tasks')->assertUnauthorized();
