@@ -29,7 +29,14 @@ function injectNuxtHelpers() {
 
       if (id.endsWith('/app/middleware/auth.ts')) {
         return {
-          code: `const defineNuxtRouteMiddleware = (middleware: unknown) => middleware\nconst useAuth = globalThis.useAuth\nconst navigateTo = globalThis.navigateTo\n${code}`,
+          code: code.replace(
+            "import { useAuth } from '~/features/auth/model/useAuth'",
+            "const useAuth = globalThis.useAuth"
+          )
+            .replace(
+              'export default defineNuxtRouteMiddleware(() => {',
+              "const defineNuxtRouteMiddleware = (middleware: unknown) => middleware\nconst navigateTo = globalThis.navigateTo\n\nexport default defineNuxtRouteMiddleware(() => {"
+            ),
           map: null
         }
       }

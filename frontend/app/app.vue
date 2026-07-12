@@ -7,6 +7,8 @@
 </template>
 
 <script setup lang="ts">
+import { useAuth } from '~/features/auth/model/useAuth'
+
 const route = useRoute()
 const { token, currentUser, fetchCurrentUser } = useAuth()
 

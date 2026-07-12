@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import { useAuth } from '~/features/auth/model/useAuth'
 import type { LoginCredentials } from '~/types/api'
 import type { FieldErrors } from '~/types/ui'
 

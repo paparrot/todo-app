@@ -20,6 +20,8 @@
 </template>
 
 <script setup lang="ts">
+import { useAuth } from '~/features/auth/model/useAuth'
+
 const { currentUser, logout } = useAuth()
 
 const roleLabel = computed(() => {

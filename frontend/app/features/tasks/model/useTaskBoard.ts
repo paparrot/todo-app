@@ -1,4 +1,9 @@
 import type { FieldErrors } from '~/types/ui'
+import { useAuth } from '~/features/auth/model/useAuth'
+import { useTasks } from '~/features/tasks/model/useTasks'
+import { useTaskDialog } from '~/features/tasks/model/useTaskDialog'
+import { useFormatDate } from '~/composables/useFormatDate'
+import { useInfiniteScroll } from '~/composables/useInfiniteScroll'
 import { sortDirectionLabels, sortFieldLabels, taskStatusClasses, taskStatusLabels } from './constants'
 import type { CreateTaskData, Task, TaskStatus, UpdateTaskData } from './types'
 
