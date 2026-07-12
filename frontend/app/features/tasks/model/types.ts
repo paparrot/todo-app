@@ -11,6 +11,7 @@ export interface Task {
   due_date: string | null
   status: TaskStatus
   user_id: number
+  user_name: string | null
 }
 
 export interface CreateTaskData {

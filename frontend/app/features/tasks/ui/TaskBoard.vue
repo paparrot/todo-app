@@ -6,7 +6,7 @@
         <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-900">Todo List</h1>
         <p class="mt-2 text-sm text-slate-600">Track work in a clean, focused view.</p>
       </div>
-      <div class="flex gap-3">
+      <div v-if="canCreateTask" class="flex gap-3">
         <Button @click="openAddTaskDialog">
           <PlusIcon class="h-4 w-4" />
           Add task
@@ -61,6 +61,7 @@
               <div class="flex-1 space-y-3">
                 <div class="h-4 w-24 rounded-full bg-slate-200"></div>
                 <div class="h-6 w-3/4 rounded bg-slate-200"></div>
+                <div class="h-4 w-32 rounded bg-slate-200"></div>
                 <div class="h-4 w-full rounded bg-slate-200"></div>
                 <div class="h-4 w-2/3 rounded bg-slate-200"></div>
               </div>
@@ -81,7 +82,7 @@
               <h2 class="text-xl font-semibold text-slate-900">No tasks yet</h2>
               <p class="mt-2 text-sm text-slate-600">Create your first task to get started.</p>
             </div>
-            <Button @click="openAddTaskDialog">
+            <Button v-if="canCreateTask" @click="openAddTaskDialog">
               <PlusIcon class="h-4 w-4" />
               Add task
             </Button>
@@ -102,6 +103,7 @@
                   {{ taskStatusLabels[task.status] }}
                 </div>
                 <h3 class="mt-2 text-xl font-semibold text-slate-900">{{ task.title }}</h3>
+                <p class="mt-1 text-sm text-slate-500">Created by: {{ task.user_name ?? 'Unknown user' }}</p>
                 <p v-if="task.description" class="mt-2 text-slate-600">{{ task.description }}</p>
                 <div class="mt-4 flex flex-wrap items-center gap-4">
                   <span class="text-sm text-slate-500">Due: {{ formatDate(task.due_date) }}</span>
@@ -149,7 +151,7 @@
       </div>
     </div>
 
-    <Dialog v-model="showAddModal">
+    <Dialog v-if="canCreateTask" v-model="showAddModal">
       <h2 class="mb-6 text-2xl font-semibold tracking-tight text-slate-900">Add New Task</h2>
       <Form @submit="handleAddTask">
         <Input
@@ -249,9 +251,11 @@ import type {
 } from '../model/types'
 import type { FieldErrors } from '~/types/ui'
 
+const { currentUser } = useAuth()
 const { tasks, loading: tasksLoading, loadingMore, errors, searchQuery, statusFilter, sortBy, sortDirection, currentPage, lastPage, getTasks, loadMoreTasks, createTask, updateTask, deleteTask } = useTasks()
 const { formatDate } = useFormatDate()
 const { isAddTaskDialogOpen: showAddModal, openAddTaskDialog, closeAddTaskDialog } = useTaskDialog()
+const canCreateTask = computed(() => currentUser.value?.role === 'owner')
 const showEditModal = ref<boolean>(false)
 const showDeleteModal = ref<boolean>(false)
 const taskToDelete = ref<number | null>(null)

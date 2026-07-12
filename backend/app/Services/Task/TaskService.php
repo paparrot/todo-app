@@ -22,19 +22,20 @@ final class TaskService
         ?string $search = null,
         ?TaskStatus $status = null,
     ): LengthAwarePaginator {
-        $query = $user->isAdmin()
-            ? TaskModel::query()
-            : $user->tasks();
+        $query = $user->isAdmin() ? TaskModel::query() : $user->tasks();
 
         if ($search !== null) {
-            $query->whereRaw('LOWER(title) LIKE ?', ['%' . Str::lower($search) . '%']);
+            $query->whereRaw("LOWER(title) LIKE ?", [
+                "%" . Str::lower($search) . "%",
+            ]);
         }
 
         if ($status !== null) {
-            $query->where('status', $status->value);
+            $query->where("status", $status->value);
         }
 
         return $query
+            ->with("user:id,name")
             ->orderBy($sortBy, $direction)
             ->paginate($perPage)
             ->withQueryString();
@@ -44,10 +45,13 @@ final class TaskService
         User $user,
         CreateTaskDTO $createTaskDTO,
     ): TaskModel {
-        return $user->tasks()->create(array_merge(
-            $createTaskDTO->toArray(),
-            ['status' => TaskStatus::PENDING],
-        ));
+        return $user
+            ->tasks()
+            ->create(
+                array_merge($createTaskDTO->toArray(), [
+                    "status" => TaskStatus::PENDING,
+                ]),
+            );
     }
 
     public function updateTask(
@@ -58,7 +62,6 @@ final class TaskService
 
         return $task->refresh();
     }
-
 
     public function deleteTask(TaskModel $task): void
     {

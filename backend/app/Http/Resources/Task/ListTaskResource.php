@@ -17,12 +17,13 @@ final class ListTaskResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'title' => $this->title,
-            'description' => $this->description,
-            'due_date' => $this->due_date?->toDateString(),
-            'status' => $this->status->value,
-            'user_id' => $this->user_id,
+            "id" => $this->id,
+            "title" => $this->title,
+            "description" => $this->description,
+            "due_date" => $this->due_date?->toDateString(),
+            "status" => $this->status->value,
+            "user_id" => $this->user_id,
+            "user_name" => $this->user?->name,
         ];
     }
 }
