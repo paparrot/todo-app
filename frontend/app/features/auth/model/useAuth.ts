@@ -1,4 +1,4 @@
-import type { ActionResult, ApiErrorResponse, AuthResponse, LoginCredentials, RegisterData } from '~/types/api'
+import type { ActionResult, ApiErrorResponse, AuthResponse, AuthUser, LoginCredentials, RegisterData } from '~/types/api'
 import type { FieldErrors } from '~/types/ui'
 
 function extractApiErrors(error: unknown, fallbackMessage = 'Something went wrong'): FieldErrors {
@@ -24,9 +24,31 @@ export const useAuth = () => {
     secure: import.meta.env.PROD,
     path: '/'
   })
+  const currentUser = useState<AuthUser | null>('current_user', () => null)
   const isAuthenticated = computed(() => !!token.value)
 
   const { apiFetch } = useApi()
+
+  const fetchCurrentUser = async (): Promise<AuthUser | null> => {
+    try {
+      const response = await apiFetch<AuthUser>('/user')
+      currentUser.value = response
+      return response
+    } catch (error: unknown) {
+      currentUser.value = null
+
+      if (typeof error === 'object' && error !== null) {
+        const statusCode = 'statusCode' in error ? Number((error as { statusCode?: unknown }).statusCode) : null
+
+        if (statusCode === 401 || statusCode === 403) {
+          token.value = null
+          await navigateTo('/login')
+        }
+      }
+
+      return null
+    }
+  }
 
   const login = async (credentials: LoginCredentials): Promise<ActionResult> => {
     try {
@@ -35,6 +57,7 @@ export const useAuth = () => {
         body: credentials
       })
       token.value = response.token
+      currentUser.value = response.user
       return { success: true }
     } catch (error: unknown) {
       return {
@@ -51,6 +74,7 @@ export const useAuth = () => {
         body: data
       })
       token.value = response.token
+      currentUser.value = response.user
       return { success: true }
     } catch (error: unknown) {
       return {
@@ -69,13 +93,16 @@ export const useAuth = () => {
       console.error('Logout error:', error)
     } finally {
       token.value = null
+      currentUser.value = null
       await navigateTo('/login')
     }
   }
 
   return {
     token,
+    currentUser,
     isAuthenticated,
+    fetchCurrentUser,
     login,
     register,
     logout

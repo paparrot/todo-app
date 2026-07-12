@@ -1,20 +1,18 @@
 <template>
-  <div class="min-h-screen bg-slate-50">
-    <div class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <div class="mb-8 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-soft lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p class="text-sm font-medium uppercase tracking-[0.2em] text-primary-600">Workspace</p>
-          <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-900">Todo List</h1>
-          <p class="mt-2 text-sm text-slate-600">Track work in a clean, focused view.</p>
-        </div>
-        <div class="flex gap-3">
-          <Button @click="showAddModal = true">
-            <PlusIcon class="h-4 w-4" />
-            Add Task
-          </Button>
-          <Button variant="secondary" @click="handleLogout">Logout</Button>
-        </div>
+  <div class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="mb-8 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-soft lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="text-sm font-medium uppercase tracking-[0.2em] text-primary-600">Workspace</p>
+        <h1 class="mt-1 text-3xl font-semibold tracking-tight text-slate-900">Todo List</h1>
+        <p class="mt-2 text-sm text-slate-600">Track work in a clean, focused view.</p>
       </div>
+      <div class="flex gap-3">
+        <Button @click="showAddModal = true">
+          <PlusIcon class="h-4 w-4" />
+          Add Task
+        </Button>
+      </div>
+    </div>
 
       <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
         <div class="grid gap-4 lg:grid-cols-4">
@@ -191,7 +189,6 @@
         </Button>
       </div>
     </Dialog>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -206,7 +203,6 @@ import type {
 } from '../model/types'
 import type { FieldErrors } from '~/types/ui'
 
-const { logout } = useAuth()
 const { tasks, loading: tasksLoading, errors, searchQuery, statusFilter, sortBy, sortDirection, getTasks, createTask, updateTask, deleteTask } = useTasks()
 const { formatDate } = useFormatDate()
 const showAddModal = ref<boolean>(false)
@@ -251,10 +247,6 @@ const editForm = ref<UpdateTaskData>({
   due_date: null,
   status: 'pending'
 })
-
-const handleLogout = async (): Promise<void> => {
-  await logout()
-}
 
 const openEditModal = (task: Task): void => {
   editForm.value = {
