@@ -20,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useAuth } from '~/features/auth/model/useAuth'
 
 const { currentUser, logout } = useAuth()

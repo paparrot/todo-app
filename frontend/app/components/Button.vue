@@ -13,6 +13,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+
 type ButtonVariant = 'primary' | 'secondary' | 'danger'
 type ButtonSize = 'md' | 'sm'
 

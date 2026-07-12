@@ -5,32 +5,18 @@ vi.mock('~/features/auth/model/useAuth', () => ({
   useAuth: () => (globalThis as typeof globalThis & { __authState?: { isAuthenticated: { value: boolean } } }).__authState
 }))
 
-async function importAuthMiddleware() {
+async function importGuestMiddleware() {
   vi.resetModules()
-  return import('./auth')
+  return import('./guest')
 }
 
-describe('auth middleware', () => {
+describe('guest middleware', () => {
   beforeEach(() => {
     vi.unstubAllGlobals()
     ;(globalThis as typeof globalThis & { __authState?: { isAuthenticated: { value: boolean } } }).__authState = undefined
   })
 
-  it('redirects unauthenticated users to login', async () => {
-    const isAuthenticated = ref(false)
-    const navigateTo = vi.fn()
-
-    ;(globalThis as typeof globalThis & { __authState?: { isAuthenticated: { value: boolean } } }).__authState = {
-      isAuthenticated
-    }
-    vi.stubGlobal('navigateTo', navigateTo)
-
-    const middleware = (await importAuthMiddleware()).default
-    expect(middleware()).toBeUndefined()
-    expect(navigateTo).toHaveBeenCalledWith('/login')
-  })
-
-  it('allows authenticated users to continue', async () => {
+  it('redirects authenticated users to home', async () => {
     const isAuthenticated = ref(true)
     const navigateTo = vi.fn()
 
@@ -39,7 +25,21 @@ describe('auth middleware', () => {
     }
     vi.stubGlobal('navigateTo', navigateTo)
 
-    const middleware = (await importAuthMiddleware()).default
+    const middleware = (await importGuestMiddleware()).default
+    expect(middleware()).toBeUndefined()
+    expect(navigateTo).toHaveBeenCalledWith('/')
+  })
+
+  it('allows guests to continue', async () => {
+    const isAuthenticated = ref(false)
+    const navigateTo = vi.fn()
+
+    ;(globalThis as typeof globalThis & { __authState?: { isAuthenticated: { value: boolean } } }).__authState = {
+      isAuthenticated
+    }
+    vi.stubGlobal('navigateTo', navigateTo)
+
+    const middleware = (await importGuestMiddleware()).default
     expect(middleware()).toBeUndefined()
     expect(navigateTo).not.toHaveBeenCalled()
   })

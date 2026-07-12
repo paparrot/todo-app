@@ -1,3 +1,4 @@
+import { defineNuxtRouteMiddleware, navigateTo } from '#imports'
 import { useAuth } from '~/features/auth/model/useAuth'
 
 export default defineNuxtRouteMiddleware(() => {

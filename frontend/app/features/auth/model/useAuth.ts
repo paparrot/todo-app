@@ -1,3 +1,6 @@
+import { computed } from 'vue'
+import { navigateTo, useCookie, useState } from '#imports'
+import { useApi } from '~/composables/useApi'
 import type { ActionResult, ApiErrorResponse, AuthResponse, AuthUser, LoginCredentials, RegisterData } from '~/types/api'
 import type { FieldErrors } from '~/types/ui'
 

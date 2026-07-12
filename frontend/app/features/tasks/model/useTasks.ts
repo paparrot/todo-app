@@ -12,6 +12,9 @@ import type {
   UpdateTaskData
 } from './types'
 
+import { ref, watch } from 'vue'
+import { useApi } from '~/composables/useApi'
+
 export const useTasks = () => {
   const { apiFetch } = useApi()
   const tasks = ref<Task[]>([])

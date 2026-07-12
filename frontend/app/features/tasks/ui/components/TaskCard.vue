@@ -46,6 +46,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { CheckIcon, PencilIcon, PlayIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import type { Task, TaskStatus } from '../../model/types'
 

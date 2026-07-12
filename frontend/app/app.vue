@@ -7,6 +7,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted } from 'vue'
+import { useHead, useRoute } from '#imports'
 import { useAuth } from '~/features/auth/model/useAuth'
 
 const route = useRoute()

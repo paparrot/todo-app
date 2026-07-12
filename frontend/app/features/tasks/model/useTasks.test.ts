@@ -2,6 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, ref } from 'vue'
 import type { Task, TaskListResponse } from './types'
 
+vi.mock('~/composables/useApi', () => ({
+  useApi: () => ({
+    apiFetch: (globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch
+  })
+}))
+
 function createTaskListResponse(tasks: Task[], currentPage = 1, lastPage = 1): TaskListResponse {
   return {
     data: tasks,
@@ -45,6 +51,7 @@ describe('useTasks', () => {
   beforeEach(() => {
     vi.useRealTimers()
     vi.unstubAllGlobals()
+    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = undefined
   })
 
   it('loads tasks with the current filters', async () => {
@@ -53,7 +60,7 @@ describe('useTasks', () => {
       return createTaskListResponse([makeTask(1)], 1, 1)
     })
 
-    vi.stubGlobal('useApi', () => ({ apiFetch }))
+    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { tasks, getTasks, loading, loadingMore, currentPage, lastPage } = useTasks()
@@ -73,7 +80,7 @@ describe('useTasks', () => {
     vi.useFakeTimers()
     const apiFetch = vi.fn(async () => createTaskListResponse([makeTask(1)], 1, 1))
 
-    vi.stubGlobal('useApi', () => ({ apiFetch }))
+    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { searchQuery, tasks } = useTasks()
@@ -103,7 +110,7 @@ describe('useTasks', () => {
       throw new Error(`Unexpected url: ${url}`)
     })
 
-    vi.stubGlobal('useApi', () => ({ apiFetch }))
+    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { getTasks, loadMoreTasks, tasks, currentPage, lastPage } = useTasks()
@@ -121,7 +128,7 @@ describe('useTasks', () => {
   it('does not load more when already loading or at the last page', async () => {
     const apiFetch = vi.fn(async () => createTaskListResponse([makeTask(1)], 1, 1))
 
-    vi.stubGlobal('useApi', () => ({ apiFetch }))
+    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { getTasks, loadMoreTasks, loading, loadingMore } = useTasks()
@@ -148,7 +155,7 @@ describe('useTasks', () => {
       return createTaskListResponse([makeTask(10)], 1, 1)
     })
 
-    vi.stubGlobal('useApi', () => ({ apiFetch }))
+    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { createTask: createTaskAction, tasks, loading } = useTasks()
@@ -175,7 +182,7 @@ describe('useTasks', () => {
       }
     })
 
-    vi.stubGlobal('useApi', () => ({ apiFetch }))
+    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { createTask: createTaskAction, errors, loading } = useTasks()
@@ -215,7 +222,7 @@ describe('useTasks', () => {
       return createTaskListResponse([makeTask(1)], 1, 1)
     })
 
-    vi.stubGlobal('useApi', () => ({ apiFetch }))
+    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { getTasks, updateTask, deleteTask, tasks } = useTasks()
@@ -248,7 +255,7 @@ describe('useTasks', () => {
       }
     })
 
-    vi.stubGlobal('useApi', () => ({ apiFetch }))
+    ;(globalThis as typeof globalThis & { __apiFetch?: ReturnType<typeof vi.fn> }).__apiFetch = apiFetch
 
     const { useTasks } = await importUseTasks()
     const { updateTask, errors } = useTasks()

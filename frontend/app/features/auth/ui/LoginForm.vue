@@ -54,6 +54,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { navigateTo } from '#imports'
 import { useAuth } from '~/features/auth/model/useAuth'
 import type { LoginCredentials } from '~/types/api'
 import type { FieldErrors } from '~/types/ui'

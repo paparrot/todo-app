@@ -41,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+import { reactive, watch } from 'vue'
 import type { Task, UpdateTaskData } from '../../model/types'
 import type { FieldErrors } from '~/types/ui'
 

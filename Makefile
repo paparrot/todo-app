@@ -84,7 +84,7 @@ frontend-preview:
 	$(COMPOSE) run --rm frontend npm run preview
 
 frontend-test:
-	$(COMPOSE) run --rm frontend npm run test
+	$(COMPOSE) exec -T frontend npm run test
 
 frontend-test-watch:
-	$(COMPOSE) run --rm frontend npm run test:watch
+	$(COMPOSE) exec -T frontend npm run test:watch

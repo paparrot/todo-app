@@ -1,3 +1,5 @@
+import { useCookie, useRuntimeConfig } from '#imports'
+
 export const useApi = () => {
   const config = useRuntimeConfig()
 

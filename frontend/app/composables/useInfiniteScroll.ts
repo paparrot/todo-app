@@ -1,3 +1,5 @@
+import { ref, watchEffect } from 'vue'
+
 interface UseInfiniteScrollOptions {
   canLoadMore: () => boolean
   isLoading?: () => boolean
