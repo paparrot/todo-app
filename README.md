@@ -63,6 +63,8 @@ php artisan migrate:fresh --seed
 
 ## Полезные команды
 
+### Backend
+
 ```bash
 make down        # остановить контейнеры
 make build       # пересобрать образы
@@ -74,6 +76,18 @@ make lint        # проверить код через Pint
 make migrate     # выполнить миграции
 make seed        # запустить сидеры
 make fresh       # сбросить БД и заново выполнить сидеры
+```
+
+### Frontend
+
+```bash
+make frontend-install     # установить frontend-зависимости
+make frontend-dev         # запустить Nuxt в режиме разработки
+make frontend-build       # собрать production-версию frontend
+make frontend-generate    # сгенерировать статический билд frontend
+make frontend-preview     # запустить preview production-сборки
+make frontend-test        # запустить frontend-тесты
+make frontend-test-watch  # запустить frontend-тесты в watch-режиме
 ```
 
 ## Сидеры и тестовые пользователи
