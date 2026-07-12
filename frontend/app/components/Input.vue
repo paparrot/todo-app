@@ -7,6 +7,8 @@
       :value="modelValue"
       :placeholder="placeholder"
       :disabled="disabled"
+      :required="required"
+      :minlength="minlength"
       @input="handleInput"
       class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 disabled:cursor-not-allowed disabled:bg-slate-100"
     />
@@ -23,6 +25,8 @@ interface InputProps {
   modelValue?: string | number
   placeholder?: string
   disabled?: boolean
+  required?: boolean
+  minlength?: number
 }
 
 const props = withDefaults(defineProps<InputProps>(), {
@@ -30,7 +34,9 @@ const props = withDefaults(defineProps<InputProps>(), {
   type: 'text',
   modelValue: '',
   placeholder: '',
-  disabled: false
+  disabled: false,
+  required: false,
+  minlength: undefined
 })
 
 const emit = defineEmits<{

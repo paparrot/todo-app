@@ -154,10 +154,13 @@
       <Form @submit="handleAddTask">
         <Input
           id="add-title"
-          label="Title"
+          label="Title *"
           placeholder="Buy milk"
+          :required="true"
+          :minlength="3"
           v-model="addForm.title"
         />
+        <p class="mt-1 text-xs text-slate-500">Required, at least 3 characters.</p>
         <div v-if="addErrors.title" class="mt-1 text-sm text-danger-600">{{ addErrors.title[0] }}</div>
         <Textarea
           id="add-description"
@@ -187,9 +190,12 @@
       <Form @submit="handleUpdateTask">
         <Input
           id="edit-title"
-          label="Title"
+          label="Title *"
+          :required="true"
+          :minlength="3"
           v-model="editForm.title"
         />
+        <p class="mt-1 text-xs text-slate-500">Required, at least 3 characters.</p>
         <div v-if="editErrors.title" class="mt-1 text-sm text-danger-600">{{ editErrors.title[0] }}</div>
         <Textarea
           id="edit-description"
@@ -351,13 +357,13 @@ const handleDeleteTask = async (): Promise<void> => {
   }
 }
 
-watchEffect((onCleanup) => {
+watchEffect((onCleanup: (cleanup: () => void) => void) => {
   if (!loadMoreTrigger.value || tasksLoading.value || loadingMore.value || tasks.value.length === 0 || currentPage.value >= lastPage.value) {
     return
   }
 
   const observer = new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) {
+    if (entry?.isIntersecting) {
       void loadMoreTasks()
     }
   }, {
