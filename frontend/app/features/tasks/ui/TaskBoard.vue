@@ -59,81 +59,21 @@
       </div>
     </div>
 
-    <Dialog v-if="canCreateTask" v-model="showAddModal">
-      <h2 class="mb-6 text-2xl font-semibold tracking-tight text-slate-900">Add New Task</h2>
-      <Form @submit="handleAddTask">
-        <Input
-          id="add-title"
-          label="Title *"
-          placeholder="Buy milk"
-          :required="true"
-          :minlength="3"
-          v-model="addForm.title"
-        />
-        <p class="mt-1 text-xs text-slate-500">Required, at least 3 characters.</p>
-        <div v-if="addErrors.title" class="mt-1 text-sm text-danger-600">{{ addErrors.title[0] }}</div>
-        <Textarea
-          id="add-description"
-          label="Description"
-          placeholder="From store"
-          v-model="addForm.description"
-        />
-        <div v-if="addErrors.description" class="mt-1 text-sm text-danger-600">{{ addErrors.description[0] }}</div>
-        <Input
-          id="add-due-date"
-          label="Due Date"
-          type="date"
-          v-model="addForm.due_date"
-        />
-        <div v-if="addErrors.due_date" class="mt-1 text-sm text-danger-600">{{ addErrors.due_date[0] }}</div>
-        <div class="mt-6 flex gap-3">
-          <Button type="button" variant="secondary" class="flex-1" @click="closeAddTaskDialog">Cancel</Button>
-          <Button type="submit" class="flex-1" :disabled="tasksLoading">
-            {{ tasksLoading ? 'Adding...' : 'Add task' }}
-          </Button>
-        </div>
-      </Form>
-    </Dialog>
+    <TaskCreateDialog
+      v-if="canCreateTask"
+      v-model="showAddModal"
+      :loading="tasksLoading"
+      :errors="addErrors"
+      @submit="handleAddTask"
+    />
 
-    <Dialog v-model="showEditModal">
-      <h2 class="mb-6 text-2xl font-semibold tracking-tight text-slate-900">Edit Task</h2>
-      <Form @submit="handleUpdateTask">
-        <Input
-          id="edit-title"
-          label="Title *"
-          :required="true"
-          :minlength="3"
-          v-model="editForm.title"
-        />
-        <p class="mt-1 text-xs text-slate-500">Required, at least 3 characters.</p>
-        <div v-if="editErrors.title" class="mt-1 text-sm text-danger-600">{{ editErrors.title[0] }}</div>
-        <Textarea
-          id="edit-description"
-          label="Description"
-          v-model="editForm.description"
-        />
-        <div v-if="editErrors.description" class="mt-1 text-sm text-danger-600">{{ editErrors.description[0] }}</div>
-        <Input
-          id="edit-due-date"
-          label="Due Date"
-          type="date"
-          v-model="editForm.due_date"
-        />
-        <div v-if="editErrors.due_date" class="mt-1 text-sm text-danger-600">{{ editErrors.due_date[0] }}</div>
-        <Select id="edit-status" label="Status" v-model="editForm.status">
-          <option value="pending">Pending</option>
-          <option value="in_progress">In Progress</option>
-          <option value="completed">Completed</option>
-        </Select>
-        <div v-if="editErrors.status" class="mt-1 text-sm text-danger-600">{{ editErrors.status[0] }}</div>
-        <div class="mt-6 flex gap-3">
-          <Button type="button" variant="secondary" class="flex-1" @click="showEditModal = false">Cancel</Button>
-          <Button type="submit" class="flex-1" :disabled="tasksLoading">
-            {{ tasksLoading ? 'Saving...' : 'Save Changes' }}
-          </Button>
-        </div>
-      </Form>
-    </Dialog>
+    <TaskEditDialog
+      v-model="showEditModal"
+      :task="taskToEdit"
+      :loading="tasksLoading"
+      :errors="editErrors"
+      @submit="handleUpdateTask"
+    />
 
     <Dialog v-model="showDeleteModal">
       <h2 class="mb-4 text-2xl font-semibold tracking-tight text-slate-900">Delete Task</h2>
@@ -148,8 +88,11 @@
 </template>
 
 <script setup lang="ts">
+import { PlusIcon } from '@heroicons/vue/24/outline'
 import TaskBoardSkeleton from './components/TaskBoardSkeleton.vue'
 import TaskCard from './components/TaskCard.vue'
+import TaskCreateDialog from './components/TaskCreateDialog.vue'
+import TaskEditDialog from './components/TaskEditDialog.vue'
 import TaskEmptyState from './components/TaskEmptyState.vue'
 import TaskFiltersPanel from './components/TaskFiltersPanel.vue'
 import type {
@@ -170,6 +113,7 @@ const canCreateTask = computed(() => currentUser.value?.role === 'owner')
 const showEditModal = ref<boolean>(false)
 const showDeleteModal = ref<boolean>(false)
 const taskToDelete = ref<number | null>(null)
+const taskToEdit = ref<Task | null>(null)
 const loadMoreTrigger = ref<HTMLElement | null>(null)
 const addErrors = ref<FieldErrors>({})
 const editErrors = ref<FieldErrors>({})
@@ -196,28 +140,10 @@ const sortDirectionLabels: Record<SortDirection, string> = {
   desc: 'Descending'
 }
 
-const addForm = ref<CreateTaskData>({
-  title: '',
-  description: '',
-  due_date: null
-})
 
-const editForm = ref<UpdateTaskData>({
-  id: 0,
-  title: '',
-  description: '',
-  due_date: null,
-  status: 'pending'
-})
 
 const openEditModal = (task: Task): void => {
-  editForm.value = {
-    id: task.id,
-    title: task.title,
-    description: task.description ?? '',
-    due_date: task.due_date,
-    status: task.status
-  }
+  taskToEdit.value = task
   editErrors.value = {}
   showEditModal.value = true
 }
@@ -227,26 +153,22 @@ const openDeleteModal = (task: Task): void => {
   showDeleteModal.value = true
 }
 
-const handleAddTask = async (): Promise<void> => {
+const handleAddTask = async (data: CreateTaskData): Promise<void> => {
   addErrors.value = {}
-  const result = await createTask(addForm.value)
+  const result = await createTask(data)
   if (result.success) {
     closeAddTaskDialog()
-    addForm.value = {
-      title: '',
-      description: '',
-      due_date: null
-    }
   } else {
     addErrors.value = result.errors || {}
   }
 }
 
-const handleUpdateTask = async (): Promise<void> => {
+const handleUpdateTask = async (data: UpdateTaskData): Promise<void> => {
   editErrors.value = {}
-  const result = await updateTask(editForm.value)
+  const result = await updateTask(data)
   if (result.success) {
     showEditModal.value = false
+    taskToEdit.value = null
   } else {
     editErrors.value = result.errors || {}
   }
@@ -265,6 +187,12 @@ const handleSetTaskStatus = async (task: Task, status: TaskStatus): Promise<void
 const handleTaskStatus = (task: Task, status: TaskStatus): void => {
   void handleSetTaskStatus(task, status)
 }
+
+watch(showEditModal, (open: boolean) => {
+  if (!open) {
+    taskToEdit.value = null
+  }
+})
 
 const handleDeleteTask = async (): Promise<void> => {
   if (taskToDelete.value) {
