@@ -42,7 +42,7 @@ function extractApiErrors(error: unknown): FieldErrors {
 export const useTasks = () => {
   const { apiFetch } = useApi()
   const tasks = ref<Task[]>([])
-  const loading = ref<boolean>(false)
+  const loading = ref<boolean>(true)
   const errors = ref<FieldErrors>({})
   const searchQuery = ref<string>('')
   const statusFilter = ref<TaskStatus | ''>('')

@@ -7,14 +7,14 @@
         <p class="mt-2 text-sm text-slate-600">Track work in a clean, focused view.</p>
       </div>
       <div class="flex gap-3">
-        <Button @click="showAddModal = true">
+        <Button @click="openAddTaskDialog">
           <PlusIcon class="h-4 w-4" />
-          Add Task
+          Add task
         </Button>
       </div>
     </div>
 
-      <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+    <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
         <div class="grid gap-4 lg:grid-cols-4">
           <div class="lg:col-span-1">
             <Input
@@ -54,15 +54,46 @@
         </p>
       </div>
 
-      <div v-if="tasksLoading" class="flex justify-center py-12">
-        <p class="text-slate-600">Loading tasks...</p>
+      <div v-if="tasksLoading" class="grid gap-6">
+        <Card v-for="index in 3" :key="index">
+          <div class="animate-pulse space-y-4">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex-1 space-y-3">
+                <div class="h-4 w-24 rounded-full bg-slate-200"></div>
+                <div class="h-6 w-3/4 rounded bg-slate-200"></div>
+                <div class="h-4 w-full rounded bg-slate-200"></div>
+                <div class="h-4 w-2/3 rounded bg-slate-200"></div>
+              </div>
+              <div class="flex gap-2">
+                <div class="h-9 w-9 rounded-lg bg-slate-200"></div>
+                <div class="h-9 w-9 rounded-lg bg-slate-200"></div>
+              </div>
+            </div>
+            <div class="h-4 w-32 rounded bg-slate-200"></div>
+          </div>
+        </Card>
+      </div>
+
+      <div v-else-if="tasks.length === 0" class="mb-6">
+        <Card>
+          <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="text-xl font-semibold text-slate-900">No tasks yet</h2>
+              <p class="mt-2 text-sm text-slate-600">Create your first task to get started.</p>
+            </div>
+            <Button @click="openAddTaskDialog">
+              <PlusIcon class="h-4 w-4" />
+              Add task
+            </Button>
+          </div>
+        </Card>
       </div>
 
       <div v-if="errors.general?.length" class="mb-6 rounded-2xl border border-danger-200 bg-danger-50 px-4 py-3 text-sm text-danger-700">
         {{ errors.general[0] }}
       </div>
 
-      <div class="grid gap-6">
+      <div v-if="tasks.length > 0" class="grid gap-6">
         <Card v-for="task in tasks" :key="task.id">
           <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div class="flex-1">
@@ -134,9 +165,9 @@
         />
         <div v-if="addErrors.due_date" class="mt-1 text-sm text-danger-600">{{ addErrors.due_date[0] }}</div>
         <div class="mt-6 flex gap-3">
-          <Button type="button" variant="secondary" class="flex-1" @click="showAddModal = false">Cancel</Button>
+          <Button type="button" variant="secondary" class="flex-1" @click="closeAddTaskDialog">Cancel</Button>
           <Button type="submit" class="flex-1" :disabled="tasksLoading">
-            {{ tasksLoading ? 'Adding...' : 'Add Task' }}
+            {{ tasksLoading ? 'Adding...' : 'Add task' }}
           </Button>
         </div>
       </Form>
@@ -205,7 +236,7 @@ import type { FieldErrors } from '~/types/ui'
 
 const { tasks, loading: tasksLoading, errors, searchQuery, statusFilter, sortBy, sortDirection, getTasks, createTask, updateTask, deleteTask } = useTasks()
 const { formatDate } = useFormatDate()
-const showAddModal = ref<boolean>(false)
+const { isAddTaskDialogOpen: showAddModal, openAddTaskDialog, closeAddTaskDialog } = useTaskDialog()
 const showEditModal = ref<boolean>(false)
 const showDeleteModal = ref<boolean>(false)
 const taskToDelete = ref<number | null>(null)
@@ -269,7 +300,7 @@ const handleAddTask = async (): Promise<void> => {
   addErrors.value = {}
   const result = await createTask(addForm.value)
   if (result.success) {
-    showAddModal.value = false
+    closeAddTaskDialog()
     addForm.value = {
       title: '',
       description: '',
