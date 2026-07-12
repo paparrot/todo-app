@@ -43,14 +43,21 @@ export const useTasks = () => {
   const { apiFetch } = useApi()
   const tasks = ref<Task[]>([])
   const loading = ref<boolean>(true)
+  const loadingMore = ref<boolean>(false)
   const errors = ref<FieldErrors>({})
   const searchQuery = ref<string>('')
   const statusFilter = ref<TaskStatus | ''>('')
   const sortBy = ref<TaskSortField>('due_date')
   const sortDirection = ref<SortDirection>('desc')
+  const currentPage = ref<number>(0)
+  const lastPage = ref<number>(1)
+  const perPage = 15
 
-  const buildQuery = (): string => {
+  const buildQuery = (page = 1): string => {
     const params = new URLSearchParams()
+
+    params.append('page', String(page))
+    params.append('per_page', String(perPage))
 
     if (searchQuery.value) {
       params.append('search', searchQuery.value)
@@ -66,25 +73,51 @@ export const useTasks = () => {
     return params.toString()
   }
 
-  const getTasks = async (): Promise<void> => {
-    loading.value = true
-    errors.value = {}
+  const resetTasks = (): void => {
+    tasks.value = []
+    currentPage.value = 0
+    lastPage.value = 1
+  }
+
+  const fetchTasks = async (page: number, replace = false): Promise<void> => {
+    if (replace) {
+      loading.value = true
+      errors.value = {}
+      resetTasks()
+    } else {
+      loadingMore.value = true
+    }
 
     try {
-      const query = buildQuery()
-      const response = await apiFetch<TaskListResponse>(
-        query ? `/tasks?${query}` : '/tasks'
-      )
-      tasks.value = response.data
+      const response = await apiFetch<TaskListResponse>(`/tasks?${buildQuery(page)}`)
+      tasks.value = replace ? response.data : [...tasks.value, ...response.data]
+      currentPage.value = response.meta.current_page
+      lastPage.value = response.meta.last_page
     } catch (error: unknown) {
       errors.value = extractApiErrors(error)
     } finally {
       loading.value = false
+      loadingMore.value = false
     }
+  }
+
+  const getTasks = async (): Promise<void> => {
+    await fetchTasks(1, true)
+  }
+
+  const loadMoreTasks = async (): Promise<void> => {
+    if (loading.value || loadingMore.value || currentPage.value >= lastPage.value) {
+      return
+    }
+
+    await fetchTasks(currentPage.value + 1)
   }
 
   const debouncedGetTasks = debounce(getTasks, 300)
   watch([searchQuery, statusFilter, sortBy, sortDirection], () => {
+    loading.value = true
+    errors.value = {}
+    resetTasks()
     debouncedGetTasks()
   })
 
@@ -149,12 +182,16 @@ export const useTasks = () => {
   return {
     tasks,
     loading,
+    loadingMore,
     errors,
     searchQuery,
     statusFilter,
     sortBy,
     sortDirection,
+    currentPage,
+    lastPage,
     getTasks,
+    loadMoreTasks,
     createTask,
     updateTask,
     deleteTask

@@ -93,50 +93,59 @@
         {{ errors.general[0] }}
       </div>
 
-      <div v-if="tasks.length > 0" class="grid gap-6">
-        <Card v-for="task in tasks" :key="task.id">
-          <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div class="flex-1">
-              <div :class="['inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.18em]', taskStatusClasses[task.status]]">
-                {{ taskStatusLabels[task.status] }}
+      <div v-if="tasks.length > 0" class="space-y-6">
+        <div class="grid gap-6">
+          <Card v-for="task in tasks" :key="task.id">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div class="flex-1">
+                <div :class="['inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.18em]', taskStatusClasses[task.status]]">
+                  {{ taskStatusLabels[task.status] }}
+                </div>
+                <h3 class="mt-2 text-xl font-semibold text-slate-900">{{ task.title }}</h3>
+                <p v-if="task.description" class="mt-2 text-slate-600">{{ task.description }}</p>
+                <div class="mt-4 flex flex-wrap items-center gap-4">
+                  <span class="text-sm text-slate-500">Due: {{ formatDate(task.due_date) }}</span>
+                </div>
               </div>
-              <h3 class="mt-2 text-xl font-semibold text-slate-900">{{ task.title }}</h3>
-              <p v-if="task.description" class="mt-2 text-slate-600">{{ task.description }}</p>
-              <div class="mt-4 flex flex-wrap items-center gap-4">
-                <span class="text-sm text-slate-500">Due: {{ formatDate(task.due_date) }}</span>
+              <div class="flex flex-wrap items-center gap-2">
+                <Button
+                  v-if="task.status === 'pending'"
+                  size="sm"
+                  type="button"
+                  variant="secondary"
+                  :disabled="tasksLoading || loadingMore"
+                  @click="handleSetTaskStatus(task, 'in_progress')"
+                >
+                  <PlayIcon class="h-3.5 w-3.5" />
+                  Start
+                </Button>
+                <Button
+                  v-else-if="task.status === 'in_progress'"
+                  size="sm"
+                  type="button"
+                  :disabled="tasksLoading || loadingMore"
+                  @click="handleSetTaskStatus(task, 'completed')"
+                >
+                  <CheckIcon class="h-3.5 w-3.5" />
+                  Complete
+                </Button>
+                <IconButton aria-label="Edit task" :disabled="tasksLoading || loadingMore" @click="openEditModal(task)">
+                  <PencilIcon class="h-4 w-4" />
+                </IconButton>
+                <IconButton aria-label="Delete task" variant="danger" :disabled="tasksLoading || loadingMore" @click="openDeleteModal(task)">
+                  <TrashIcon class="h-4 w-4" />
+                </IconButton>
               </div>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <Button
-                v-if="task.status === 'pending'"
-                size="sm"
-                type="button"
-                variant="secondary"
-                :disabled="tasksLoading"
-                @click="handleSetTaskStatus(task, 'in_progress')"
-              >
-                <PlayIcon class="h-3.5 w-3.5" />
-                Start
-              </Button>
-              <Button
-                v-else-if="task.status === 'in_progress'"
-                size="sm"
-                type="button"
-                :disabled="tasksLoading"
-                @click="handleSetTaskStatus(task, 'completed')"
-              >
-                <CheckIcon class="h-3.5 w-3.5" />
-                Complete
-              </Button>
-              <IconButton aria-label="Edit task" :disabled="tasksLoading" @click="openEditModal(task)">
-                <PencilIcon class="h-4 w-4" />
-              </IconButton>
-              <IconButton aria-label="Delete task" variant="danger" :disabled="tasksLoading" @click="openDeleteModal(task)">
-                <TrashIcon class="h-4 w-4" />
-              </IconButton>
-            </div>
+          </Card>
+        </div>
+
+        <div ref="loadMoreTrigger" class="flex items-center justify-center py-6">
+          <div v-if="loadingMore" class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 shadow-soft">
+            Loading more tasks...
           </div>
-        </Card>
+          <p v-else-if="currentPage >= lastPage" class="text-sm text-slate-500">You have reached the end.</p>
+        </div>
       </div>
     </div>
 
@@ -234,12 +243,13 @@ import type {
 } from '../model/types'
 import type { FieldErrors } from '~/types/ui'
 
-const { tasks, loading: tasksLoading, errors, searchQuery, statusFilter, sortBy, sortDirection, getTasks, createTask, updateTask, deleteTask } = useTasks()
+const { tasks, loading: tasksLoading, loadingMore, errors, searchQuery, statusFilter, sortBy, sortDirection, currentPage, lastPage, getTasks, loadMoreTasks, createTask, updateTask, deleteTask } = useTasks()
 const { formatDate } = useFormatDate()
 const { isAddTaskDialogOpen: showAddModal, openAddTaskDialog, closeAddTaskDialog } = useTaskDialog()
 const showEditModal = ref<boolean>(false)
 const showDeleteModal = ref<boolean>(false)
 const taskToDelete = ref<number | null>(null)
+const loadMoreTrigger = ref<HTMLElement | null>(null)
 const addErrors = ref<FieldErrors>({})
 const editErrors = ref<FieldErrors>({})
 
@@ -340,6 +350,26 @@ const handleDeleteTask = async (): Promise<void> => {
     }
   }
 }
+
+watchEffect((onCleanup) => {
+  if (!loadMoreTrigger.value || tasksLoading.value || loadingMore.value || tasks.value.length === 0 || currentPage.value >= lastPage.value) {
+    return
+  }
+
+  const observer = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) {
+      void loadMoreTasks()
+    }
+  }, {
+    rootMargin: '200px 0px'
+  })
+
+  observer.observe(loadMoreTrigger.value)
+
+  onCleanup(() => {
+    observer.disconnect()
+  })
+})
 
 onMounted(() => {
   void getTasks()

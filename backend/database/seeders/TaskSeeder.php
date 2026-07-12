@@ -39,7 +39,7 @@ final class TaskSeeder extends Seeder
         }
 
         User::factory()->create()->tasks()->createMany(
-            Task::factory()->count(20)->make()->toArray()
+            Task::factory()->count(200)->make()->toArray()
         );
     }
 }
