@@ -8,7 +8,63 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use OpenApi\Attributes as OA;
 
+/** @mixin Task */
+#[
+    OA\Schema(
+        schema: 'Task',
+        type: 'object',
+        properties: [
+            new OA\Property(property: 'id', type: 'integer', example: 1),
+            new OA\Property(
+                property: 'title',
+                type: 'string',
+                example: 'Buy milk',
+            ),
+            new OA\Property(
+                property: 'description',
+                type: 'string',
+                nullable: true,
+                example: 'From store',
+            ),
+            new OA\Property(
+                property: 'due_date',
+                type: 'string',
+                format: 'date',
+                nullable: true,
+                example: '2026-07-15',
+            ),
+            new OA\Property(
+                property: 'status',
+                type: 'string',
+                enum: ['pending', 'completed', 'in_progress'],
+                example: 'pending',
+            ),
+            new OA\Property(property: 'user_id', type: 'integer', example: 1),
+            new OA\Property(
+                property: 'user_name',
+                type: 'string',
+                nullable: true,
+                example: 'Jane Doe',
+            ),
+            new OA\Property(
+                property: 'created_at',
+                type: 'string',
+                format: 'date-time',
+                nullable: true,
+                example: '2026-07-15T10:00:00Z',
+            ),
+            new OA\Property(
+                property: 'updated_at',
+                type: 'string',
+                format: 'date-time',
+                nullable: true,
+                example: '2026-07-15T10:00:00Z',
+            ),
+        ],
+    ),
+]
 final class TaskResource extends JsonResource
 {
     /**

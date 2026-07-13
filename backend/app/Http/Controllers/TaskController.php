@@ -9,7 +9,6 @@ use App\DTO\Task\UpdateTaskDTO;
 use App\Http\Requests\Task\CreateTaskRequest;
 use App\Http\Requests\Task\ListTaskRequest;
 use App\Http\Requests\Task\UpdateTaskRequest;
-use App\Http\Resources\Task\ListTaskResource;
 use App\Http\Resources\Task\TaskResource;
 use App\Models\Task;
 use App\Models\User;
@@ -18,15 +17,6 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @OA\Info(
- *     title="Todo API",
- *     version="1.0.0",
- *     description="API for managing tasks"
- * )
- *
- * @OA\Server(url="/api")
- */
 final class TaskController extends Controller
 {
     public function __construct(private TaskService $taskService) {}
@@ -112,82 +102,23 @@ final class TaskController extends Controller
                     response: 200,
                     description: 'Paginated list of tasks',
                     content: new OA\JsonContent(
-                        properties: [
-                            new OA\Property(
-                                property: 'data',
-                                type: 'array',
-                                items: new OA\Items(
-                                    ref: '#/components/schemas/Task',
-                                ),
-                            ),
-                            new OA\Property(
-                                property: 'links',
-                                type: 'object',
-                                properties: [
-                                    new OA\Property(
-                                        property: 'first',
-                                        type: 'string',
-                                        nullable: true,
-                                    ),
-                                    new OA\Property(
-                                        property: 'last',
-                                        type: 'string',
-                                        nullable: true,
-                                    ),
-                                    new OA\Property(
-                                        property: 'prev',
-                                        type: 'string',
-                                        nullable: true,
-                                    ),
-                                    new OA\Property(
-                                        property: 'next',
-                                        type: 'string',
-                                        nullable: true,
-                                    ),
-                                ],
-                            ),
-                            new OA\Property(
-                                property: 'meta',
-                                type: 'object',
-                                properties: [
-                                    new OA\Property(
-                                        property: 'current_page',
-                                        type: 'integer',
-                                    ),
-                                    new OA\Property(
-                                        property: 'from',
-                                        type: 'integer',
-                                        nullable: true,
-                                    ),
-                                    new OA\Property(
-                                        property: 'last_page',
-                                        type: 'integer',
-                                    ),
-                                    new OA\Property(
-                                        property: 'path',
-                                        type: 'string',
-                                    ),
-                                    new OA\Property(
-                                        property: 'per_page',
-                                        type: 'integer',
-                                    ),
-                                    new OA\Property(
-                                        property: 'to',
-                                        type: 'integer',
-                                        nullable: true,
-                                    ),
-                                    new OA\Property(
-                                        property: 'total',
-                                        type: 'integer',
-                                    ),
-                                ],
-                            ),
-                        ],
-                        type: 'object',
+                        ref: '#/components/schemas/PaginatedTaskResponse',
                     ),
                 ),
-                new OA\Response(response: 401, description: 'Unauthenticated'),
-                new OA\Response(response: 422, description: 'Validation error'),
+                new OA\Response(
+                    response: 401,
+                    description: 'Unauthenticated',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
+                new OA\Response(
+                    response: 422,
+                    description: 'Validation error',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ValidationErrorResponse',
+                    ),
+                ),
             ],
         ),
     ]
@@ -205,7 +136,7 @@ final class TaskController extends Controller
             status: $request->status(),
         );
 
-        return ListTaskResource::collection($tasks);
+        return TaskResource::collection($tasks);
     }
 
     #[
@@ -227,18 +158,30 @@ final class TaskController extends Controller
                     response: 200,
                     description: 'Task details',
                     content: new OA\JsonContent(
-                        properties: [
-                            new OA\Property(
-                                property: 'data',
-                                ref: '#/components/schemas/Task',
-                            ),
-                        ],
-                        type: 'object',
+                        ref: '#/components/schemas/Task',
                     ),
                 ),
-                new OA\Response(response: 403, description: 'Forbidden'),
-                new OA\Response(response: 404, description: 'Task not found'),
-                new OA\Response(response: 401, description: 'Unauthenticated'),
+                new OA\Response(
+                    response: 403,
+                    description: 'Forbidden',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: 'Task not found',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: 'Unauthenticated',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
             ],
         ),
     ]
@@ -264,18 +207,30 @@ final class TaskController extends Controller
                     response: 200,
                     description: 'Created task',
                     content: new OA\JsonContent(
-                        properties: [
-                            new OA\Property(
-                                property: 'data',
-                                ref: '#/components/schemas/Task',
-                            ),
-                        ],
-                        type: 'object',
+                        ref: '#/components/schemas/Task',
                     ),
                 ),
-                new OA\Response(response: 403, description: 'Forbidden'),
-                new OA\Response(response: 422, description: 'Validation error'),
-                new OA\Response(response: 401, description: 'Unauthenticated'),
+                new OA\Response(
+                    response: 403,
+                    description: 'Forbidden',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
+                new OA\Response(
+                    response: 422,
+                    description: 'Validation error',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ValidationErrorResponse',
+                    ),
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: 'Unauthenticated',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
             ],
         ),
     ]
@@ -317,19 +272,37 @@ final class TaskController extends Controller
                     response: 200,
                     description: 'Updated task',
                     content: new OA\JsonContent(
-                        properties: [
-                            new OA\Property(
-                                property: 'data',
-                                ref: '#/components/schemas/Task',
-                            ),
-                        ],
-                        type: 'object',
+                        ref: '#/components/schemas/Task',
                     ),
                 ),
-                new OA\Response(response: 403, description: 'Forbidden'),
-                new OA\Response(response: 404, description: 'Task not found'),
-                new OA\Response(response: 422, description: 'Validation error'),
-                new OA\Response(response: 401, description: 'Unauthenticated'),
+                new OA\Response(
+                    response: 403,
+                    description: 'Forbidden',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: 'Task not found',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
+                new OA\Response(
+                    response: 422,
+                    description: 'Validation error',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ValidationErrorResponse',
+                    ),
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: 'Unauthenticated',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
             ],
         ),
     ]
@@ -362,9 +335,27 @@ final class TaskController extends Controller
             ],
             responses: [
                 new OA\Response(response: 204, description: 'Task deleted'),
-                new OA\Response(response: 403, description: 'Forbidden'),
-                new OA\Response(response: 404, description: 'Task not found'),
-                new OA\Response(response: 401, description: 'Unauthenticated'),
+                new OA\Response(
+                    response: 403,
+                    description: 'Forbidden',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
+                new OA\Response(
+                    response: 404,
+                    description: 'Task not found',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
+                new OA\Response(
+                    response: 401,
+                    description: 'Unauthenticated',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
             ],
         ),
     ]

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\DTO\Auth\AuthTokenResponseDTO;
 use App\Enum\User\UserRole;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Resources\Auth\AuthTokenResponseResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,40 +26,31 @@ final class AuthController extends Controller
             requestBody: new OA\RequestBody(
                 required: true,
                 content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(
-                            property: 'name',
-                            type: 'string',
-                            example: 'John Doe',
-                        ),
-                        new OA\Property(
-                            property: 'email',
-                            type: 'string',
-                            format: 'email',
-                            example: 'john@example.com',
-                        ),
-                        new OA\Property(
-                            property: 'password',
-                            type: 'string',
-                            format: 'password',
-                            example: 'secret123',
-                        ),
-                    ],
-                    type: 'object',
+                    ref: '#/components/schemas/RegisterRequest',
                 ),
             ),
             responses: [
                 new OA\Response(
                     response: 200,
                     description: 'User registered successfully',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/AuthTokenResponse',
+                    ),
                 ),
-                new OA\Response(response: 422, description: 'Validation error'),
+                new OA\Response(
+                    response: 422,
+                    description: 'Validation error',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ValidationErrorResponse',
+                    ),
+                ),
             ],
         ),
     ]
-    public function register(RegisterRequest $request): JsonResponse
-    {
-        $user = User::create([
+    public function register(
+        RegisterRequest $request,
+    ): AuthTokenResponseResource {
+        $user = User::query()->create([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
             'password' => $request->input('password'),
@@ -68,11 +61,13 @@ final class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'User registered successfully',
-            'token' => $token,
-            'user' => $user,
-        ]);
+        return new AuthTokenResponseResource(
+            AuthTokenResponseDTO::fromUser(
+                $user,
+                $token,
+                'User registered successfully',
+            ),
+        );
     }
 
     #[
@@ -83,21 +78,7 @@ final class AuthController extends Controller
             requestBody: new OA\RequestBody(
                 required: true,
                 content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(
-                            property: 'email',
-                            type: 'string',
-                            format: 'email',
-                            example: 'john@example.com',
-                        ),
-                        new OA\Property(
-                            property: 'password',
-                            type: 'string',
-                            format: 'password',
-                            example: 'secret123',
-                        ),
-                    ],
-                    type: 'object',
+                    ref: '#/components/schemas/LoginRequest',
                 ),
             ),
             responses: [
@@ -105,48 +86,48 @@ final class AuthController extends Controller
                     response: 200,
                     description: 'Authentication successful',
                     content: new OA\JsonContent(
-                        properties: [
-                            new OA\Property(
-                                property: 'token',
-                                type: 'string',
-                                example: '1|abcdef1234567890',
-                            ),
-                        ],
-                        type: 'object',
+                        ref: '#/components/schemas/AuthTokenResponse',
                     ),
                 ),
-                new OA\Response(response: 404, description: 'User not found'),
+                new OA\Response(
+                    response: 404,
+                    description: 'User not found',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
                 new OA\Response(
                     response: 401,
                     description: 'Invalid credentials',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
                 ),
             ],
         ),
     ]
-    public function login(LoginRequest $request): JsonResponse
-    {
-        $user = User::where('email', $request->email)->first();
+    public function login(
+        LoginRequest $request,
+    ): AuthTokenResponseResource|JsonResponse {
+        $user = User::query()->where('email', $request->email)->first();
         if ($user === null) {
             return response()->json(
-                data: ['message' => 'User not found'],
-                status: Response::HTTP_NOT_FOUND,
+                ['message' => 'User not found'],
+                Response::HTTP_NOT_FOUND,
             );
         }
+
         if (! Hash::check($request->password, $user->password)) {
             return response()->json(
-                data: ['message' => 'Invalid credentials'],
-                status: Response::HTTP_UNAUTHORIZED,
+                ['message' => 'Invalid credentials'],
+                Response::HTTP_UNAUTHORIZED,
             );
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(
-            data: [
-                'token' => $token,
-                'user' => $user,
-                'message' => 'Login successful',
-            ],
+        return new AuthTokenResponseResource(
+            AuthTokenResponseDTO::fromUser($user, $token, 'Login successful'),
         );
     }
 
@@ -160,8 +141,17 @@ final class AuthController extends Controller
                 new OA\Response(
                     response: 200,
                     description: 'Logged out successfully',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/MessageResponse',
+                    ),
                 ),
-                new OA\Response(response: 401, description: 'Unauthenticated'),
+                new OA\Response(
+                    response: 401,
+                    description: 'Unauthenticated',
+                    content: new OA\JsonContent(
+                        ref: '#/components/schemas/ErrorResponse',
+                    ),
+                ),
             ],
         ),
     ]
@@ -175,6 +165,6 @@ final class AuthController extends Controller
             }
         }
 
-        return response()->json(data: ['message' => 'Logged out']);
+        return response()->json(['message' => 'Logged out']);
     }
 }

@@ -8,7 +8,42 @@ use App\Enum\Task\TaskStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use OpenApi\Attributes as OA;
 
+#[
+    OA\Schema(
+        schema: 'CreateTaskRequest',
+        type: 'object',
+        required: ['title'],
+        properties: [
+            new OA\Property(
+                property: 'title',
+                type: 'string',
+                example: 'Buy milk',
+            ),
+            new OA\Property(
+                property: 'description',
+                type: 'string',
+                nullable: true,
+                example: 'From store',
+            ),
+            new OA\Property(
+                property: 'due_date',
+                type: 'string',
+                format: 'date',
+                nullable: true,
+                example: '2026-07-15',
+            ),
+            new OA\Property(
+                property: 'status',
+                type: 'string',
+                enum: ['pending'],
+                example: 'pending',
+                default: 'pending',
+            ),
+        ],
+    ),
+]
 final class CreateTaskRequest extends FormRequest
 {
     protected function prepareForValidation(): void
@@ -28,7 +63,7 @@ final class CreateTaskRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Get the validation rules that apply to this request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */

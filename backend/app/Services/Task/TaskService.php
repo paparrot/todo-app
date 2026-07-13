@@ -43,6 +43,7 @@ final class TaskService
         }
 
         $query = $query->with('user:id,name');
+
         /** @phpstan-ignore-next-line */
         $query = $query->orderBy($sortBy, $direction);
 
