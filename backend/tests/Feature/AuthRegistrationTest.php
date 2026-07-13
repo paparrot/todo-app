@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Tests\TestCase;
 
 it('rejects duplicate emails during registration', function () {
     User::factory()->create(['email' => 'existing@example.com']);
 
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
     $this->postJson('/api/register', [
         'name' => 'Jane Doe',
         'email' => 'existing@example.com',
@@ -18,7 +19,7 @@ it('rejects duplicate emails during registration', function () {
 
 it('registers new users as owners by default', function () {
 
-    /** @var \Tests\TestCase $this */
+    /** @var TestCase $this */
     $response = $this->postJson('/api/register', [
         'name' => 'Jane Doe',
         'email' => 'jane@example.com',
