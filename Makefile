@@ -1,4 +1,4 @@
-.PHONY: help dev up down build restart logs ps check test lint backend-check backend-test backend-lint backend-analyze migrate seed fresh artisan composer-install frontend-check frontend-install frontend-dev frontend-build frontend-generate frontend-preview frontend-test frontend-test-watch frontend-lint frontend-format frontend-typecheck
+.PHONY: help dev up down build restart logs ps check test lint backend-check backend-test backend-lint backend-analyze backend-tinker migrate seed fresh artisan composer-install frontend-check frontend-install frontend-dev frontend-build frontend-generate frontend-preview frontend-test frontend-test-watch frontend-lint frontend-format frontend-typecheck
 
 COMPOSE ?= docker compose
 APP_SERVICE ?= backend
@@ -17,6 +17,7 @@ help:
 	@echo "  make backend-test        Запустить backend-тесты"
 	@echo "  make backend-lint        Проверить backend через Pint"
 	@echo "  make backend-analyze     Проверить backend через PHPStan"
+	@echo "  make backend-tinker      Открыть Laravel Tinker в backend"
 	@echo "  make frontend-check      Запустить все проверки frontend"
 	@echo "  make frontend-test       Запустить frontend-тесты"
 	@echo "  make frontend-lint       Проверить frontend через ESLint"
@@ -58,8 +59,10 @@ check: backend-check frontend-check
 
 backend-check: backend-test backend-lint backend-analyze
 
+# TODO: Переписать, разобраться с ошибкой APP_ENV=testingы
 backend-test:
-	$(COMPOSE) exec -T $(APP_SERVICE) php artisan test
+	$(COMPOSE) exec -T postgres sh -lc "psql -U laravel -d postgres -tAc \"SELECT 1 FROM pg_database WHERE datname='laravel_test'\" | grep -q 1 || createdb -U laravel laravel_test"
+	$(COMPOSE) exec -T $(APP_SERVICE) sh -lc "unset APP_ENV APP_DEBUG APP_URL DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD && APP_ENV=testing php artisan test --env=testing"
 
 backend-lint:
 	$(COMPOSE) exec -T $(APP_SERVICE) ./vendor/bin/pint --test
@@ -67,8 +70,8 @@ backend-lint:
 backend-analyze:
 	$(COMPOSE) exec -T $(APP_SERVICE) ./vendor/bin/phpstan analyse --memory-limit=1G
 
-test: backend-test
-lint: backend-lint
+backend-tinker:
+	$(COMPOSE) exec $(APP_SERVICE) php artisan tinker
 
 migrate:
 	$(COMPOSE) exec -T $(APP_SERVICE) php artisan migrate

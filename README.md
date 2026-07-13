@@ -92,11 +92,14 @@ make check     # запустить все проверки backend и frontend
 
 ### Backend
 
+Тесты используют отдельную базу `laravel_test` и `.env.testing`, поэтому не трогают рабочие данные.
+
 ```bash
 make backend-check     # запустить все проверки backend
 make backend-test      # запустить backend-тесты
 make backend-lint      # проверить код через Pint
 make backend-analyze   # проверить код через PHPStan
+make backend-tinker    # открыть Laravel Tinker
 make migrate           # выполнить миграции
 make seed              # запустить сидеры
 make fresh             # сбросить БД и заново выполнить сидеры
